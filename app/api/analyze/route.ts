@@ -67,16 +67,60 @@ async function fetchGitHubData(username: string) {
   };
 }
 
+export type RadarScores = {
+  technical: number;
+  contribution: number;
+  sustainability: number;
+  market: number;
+};
+
+const DEFAULT_SCORES: RadarScores = {
+  technical: 70,
+  contribution: 70,
+  sustainability: 70,
+  market: 70,
+};
+
+function parseScoresFromContent(content: string): { markdown: string; scores: RadarScores } {
+  const jsonBlock = content.match(/```json\s*([\s\S]*?)\s*```/);
+  if (jsonBlock) {
+    const markdown = content.replace(/\s*```json[\s\S]*?```\s*$/, "").trim();
+    try {
+      const parsed = JSON.parse(jsonBlock[1].trim()) as Record<string, number>;
+      const scores: RadarScores = {
+        technical: Math.min(100, Math.max(0, Number(parsed.technical) || DEFAULT_SCORES.technical)),
+        contribution: Math.min(100, Math.max(0, Number(parsed.contribution) || DEFAULT_SCORES.contribution)),
+        sustainability: Math.min(100, Math.max(0, Number(parsed.sustainability) || DEFAULT_SCORES.sustainability)),
+        market: Math.min(100, Math.max(0, Number(parsed.market) || DEFAULT_SCORES.market)),
+      };
+      return { markdown, scores };
+    } catch {
+      return { markdown: content.trim(), scores: DEFAULT_SCORES };
+    }
+  }
+  return { markdown: content.trim(), scores: DEFAULT_SCORES };
+}
+
 const SYSTEM_PROMPT = `あなたは年収1000万超えを狙うハイエンドエンジニア専用の査定エンジンです。高額キャリアコンサルタントとして、データに基づいた冷徹で説得力のある鑑定を行います。
 
-必ず以下の形式で、日本語のMarkdownのみを出力してください。表・太字を多用し、公式な鑑定書のような見た目にします。
+必ず以下の形式で出力してください。
 
+1) 日本語のMarkdown（表・太字を多用し、公式な鑑定書のような見た目）
 - **見出し**: ### 【鑑定結果】市場価値診断書 から始める
 - **想定年収**: 1円単位で提示（例: 12,345,678円）
 - **技術力**: S / A / B / C / D の5段階で判定し、理由を1行で
 - **技術スタック・GitHub活動・市場需給**: 箇条書きで簡潔に分析
-- **あと300万上げるために習得すべき技術**: 3つを具体的に提示（技術名と習得の優先度）
-- 全体は200〜300文字程度の高密度な情報に凝縮すること。励ましや曖昧な表現は使わず、事実とデータに基づいたプロフェッショナルな口調で。`;
+- **あと300万上げるために習得すべき技術**: 3つを具体的に提示
+- 全体は200〜300文字程度の高密度な情報に凝縮。励ましや曖昧な表現は使わず、事実とデータに基づいたプロフェッショナルな口調で。
+
+2) 最後に、以下のJSONブロックを必ず1つだけ付けてください（数値は0〜100の整数）。レーダーチャート用です。
+\`\`\`json
+{"technical": 85, "contribution": 70, "sustainability": 80, "market": 75}
+\`\`\`
+- technical: 技術力（スキル・実装力）
+- contribution: 貢献度（OSS・レビュー・コミット）
+- sustainability: 継続力（活動の持続性・一貫性）
+- market: 市場性（需要・希少性・年収レンジとの相性）`;
 
 export async function POST(req: NextRequest) {
   if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === "") {
@@ -147,7 +191,8 @@ ${githubData.topRepos
       );
     }
 
-    return NextResponse.json({ result: content });
+    const { markdown, scores } = parseScoresFromContent(content);
+    return NextResponse.json({ result: markdown, scores });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "査定に失敗しました";
     console.error("Analyze API error:", error);

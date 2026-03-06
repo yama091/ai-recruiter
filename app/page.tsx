@@ -1,6 +1,25 @@
 "use client";
 
 import { JSX, useState } from "react";
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
+
+const RADAR_LABELS = ["技術力", "貢献度", "継続力", "市場性"];
+const RADAR_KEYS = ["technical", "contribution", "sustainability", "market"] as const;
+
+type RadarScores = {
+  technical: number;
+  contribution: number;
+  sustainability: number;
+  market: number;
+};
 
 function InlineBold({ text }: { text: string }) {
   const parts = text.split(/\*\*(.*?)\*\*/g);
@@ -113,6 +132,7 @@ function SimpleMarkdown({ content }: { content: string }) {
 export default function Home() {
   const [githubUrl, setGithubUrl] = useState("");
   const [result, setResult] = useState("");
+  const [scores, setScores] = useState<RadarScores | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -132,12 +152,15 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) {
         setResult("");
+        setScores(null);
         setError(data.error || "鑑定に失敗しました");
         return;
       }
       setResult(data.result ?? "");
+      setScores(data.scores ?? null);
     } catch {
       setResult("");
+      setScores(null);
       setError("通信エラーが発生しました。しばらくしてからお試しください。");
     } finally {
       setLoading(false);
@@ -151,7 +174,13 @@ export default function Home() {
         )
       : "";
   const shareUrl =
-    typeof window !== "undefined" ? encodeURIComponent(window.location.href) : "";
+    typeof window !== "undefined"
+      ? encodeURIComponent(
+          scores
+            ? `${window.location.origin}/share?scores=${[scores.technical, scores.contribution, scores.sustainability, scores.market].join(",")}`
+            : window.location.href
+        )
+      : "";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0a0a0f] font-sans text-zinc-100">
@@ -208,6 +237,47 @@ export default function Home() {
 
         {result && (
           <section className="mt-14 space-y-8 animate-fade-in-up">
+            {scores && (
+              <div className="rounded-2xl glass-panel-strong overflow-hidden p-6 sm:p-8">
+                <p className="mb-4 text-center text-xs font-medium uppercase tracking-widest text-zinc-500">
+                  強みがひと目でわかる
+                </p>
+                <h2 className="text-center text-lg font-semibold text-white">
+                  鑑定レーダー
+                </h2>
+                <div className="mx-auto mt-6 h-[280px] w-full sm:h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart
+                      data={RADAR_KEYS.map((key, i) => ({
+                        subject: RADAR_LABELS[i],
+                        value: scores[key],
+                        fullMark: 100,
+                      }))}
+                    >
+                      <PolarGrid stroke="rgba(255,255,255,0.12)" />
+                      <PolarAngleAxis
+                        dataKey="subject"
+                        tick={{ fill: "#a1a1aa", fontSize: 11 }}
+                      />
+                      <PolarRadiusAxis
+                        angle={90}
+                        domain={[0, 100]}
+                        tick={{ fill: "#71717a", fontSize: 10 }}
+                      />
+                      <Radar
+                        name="スコア"
+                        dataKey="value"
+                        stroke="#6366f1"
+                        fill="#6366f1"
+                        fillOpacity={0.35}
+                        strokeWidth={2}
+                      />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
             <div className="rounded-2xl glass-panel-strong overflow-hidden p-6 sm:p-8">
               <SimpleMarkdown content={result} />
             </div>
