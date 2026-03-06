@@ -21,7 +21,7 @@ export default function ShareContent({ scores }: { scores: number[] }) {
   }));
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0a0a0f] font-sans text-zinc-100">
+    <main className="relative min-h-screen overflow-hidden bg-[#08080a] font-sans text-zinc-100">
       <div className="pointer-events-none fixed inset-0 bg-mesh" aria-hidden />
       <div className="relative mx-auto max-w-lg px-4 py-20">
         <div className="rounded-2xl glass-panel-strong p-8">
