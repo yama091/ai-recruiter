@@ -13,13 +13,14 @@ function parseScores(scoresParam: string | null): number[] {
   ];
 }
 
-const LABELS = ["技術力", "貢献度", "継続力", "市場性"];
+const LABELS = ["Technical", "Contribution", "Sustainability", "Market"];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const scores = parseScores(searchParams.get("scores"));
-  const salary = searchParams.get("salary"); // optional e.g. "12,345,678円"
-  const rank = searchParams.get("rank"); // optional e.g. "A"
+  const title = searchParams.get("title"); // Job title e.g. "Legendary Full-stack"
+  const salary = searchParams.get("salary");
+  const rank = searchParams.get("rank");
 
   const avg = Math.round(scores.reduce((a, b) => a + b, 0) / 4);
 
@@ -33,18 +34,16 @@ export async function GET(request: Request) {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(180deg, #08080a 0%, #0c0c10 50%, #08080a 100%)",
+          background: "linear-gradient(180deg, #030303 0%, #0a0a0c 50%, #030303 100%)",
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        {/* Glass-style border */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            borderRadius: 0,
-            border: "1px solid rgba(255,255,255,0.06)",
-            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.3)",
+            border: "2px solid rgba(255,255,255,0.06)",
+            boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.4)",
             pointerEvents: "none",
           }}
         />
@@ -52,7 +51,7 @@ export async function GET(request: Request) {
           style={{
             position: "absolute",
             inset: 0,
-            background: "radial-gradient(ellipse 85% 55% at 50% -15%, rgba(99, 102, 241, 0.18), transparent 55%)",
+            background: "radial-gradient(ellipse 90% 60% at 50% -20%, rgba(99, 102, 241, 0.25), transparent 50%), radial-gradient(ellipse 60% 40% at 100% 80%, rgba(139, 92, 246, 0.15), transparent 45%)",
             pointerEvents: "none",
           }}
         />
@@ -61,109 +60,86 @@ export async function GET(request: Request) {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: 28,
-            padding: 56,
+            gap: 24,
+            padding: 48,
           }}
         >
-          <div
-            style={{
-              fontSize: 22,
-              fontWeight: 600,
-              color: "#71717a",
-              letterSpacing: "0.28em",
-            }}
-          >
-            AI市場価値鑑定
-          </div>
-          <div
-            style={{
-              fontSize: 38,
-              fontWeight: 700,
-              color: "#fff",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            鑑定結果サマリー
+          <div style={{ fontSize: 18, fontWeight: 600, color: "#71717a", letterSpacing: "0.3em" }}>
+            AI MARKET VALUE CERTIFICATION
           </div>
 
-          {(salary || rank) && (
+          {title && (
             <div
               style={{
-                display: "flex",
-                flexDirection: "row",
-                gap: 32,
-                marginBottom: 8,
+                fontSize: 36,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                background: "linear-gradient(90deg, #a5b4fc, #c4b5fd)",
+                color: "transparent",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                textAlign: "center",
+                padding: "0 24px",
               }}
             >
-              {salary && (
-                <div
-                  style={{
-                    padding: "14px 24px",
-                    background: "rgba(255,255,255,0.06)",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div style={{ fontSize: 14, color: "#a1a1aa", marginBottom: 4 }}>想定年収</div>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: "#fff" }}>{salary}</div>
-                </div>
-              )}
-              {rank && (
-                <div
-                  style={{
-                    padding: "14px 24px",
-                    background: "rgba(99, 102, 241, 0.2)",
-                    borderRadius: 12,
-                    border: "1px solid rgba(99, 102, 241, 0.3)",
-                  }}
-                >
-                  <div style={{ fontSize: 14, color: "#a5b4fc", marginBottom: 4 }}>技術力ランク</div>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: "#fff" }}>{rank}</div>
-                </div>
-              )}
+              {decodeURIComponent(title)}
             </div>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: 44,
-              marginTop: 8,
-            }}
-          >
-            {LABELS.map((label, i) => (
+          <div style={{ display: "flex", flexDirection: "row", gap: 28, marginTop: 8 }}>
+            {salary && (
               <div
-                key={label}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 14,
+                  padding: "16px 28px",
+                  background: "rgba(255,255,255,0.06)",
+                  borderRadius: 14,
+                  border: "1px solid rgba(255,255,255,0.1)",
                 }}
               >
+                <div style={{ fontSize: 12, color: "#71717a", marginBottom: 6, letterSpacing: "0.1em" }}>EST. SALARY</div>
+                <div style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}>{decodeURIComponent(salary)}</div>
+              </div>
+            )}
+            {rank && (
+              <div
+                style={{
+                  padding: "16px 28px",
+                  background: "rgba(99, 102, 241, 0.25)",
+                  borderRadius: 14,
+                  border: "1px solid rgba(99, 102, 241, 0.4)",
+                }}
+              >
+                <div style={{ fontSize: 12, color: "#a5b4fc", marginBottom: 6, letterSpacing: "0.1em" }}>RANK</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>{decodeURIComponent(rank)}</div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "row", gap: 36, marginTop: 16 }}>
+            {LABELS.map((label, i) => (
+              <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
                 <div
                   style={{
-                    width: 112,
-                    height: 112,
+                    width: 100,
+                    height: 100,
                     borderRadius: "50%",
                     background: `conic-gradient(#6366f1 ${scores[i] * 3.6}deg, rgba(255,255,255,0.08) 0deg)`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 0 0 1px rgba(0,0,0,0.2) inset",
+                    boxShadow: "0 0 0 1px rgba(0,0,0,0.3) inset",
                   }}
                 >
                   <div
                     style={{
-                      width: 82,
-                      height: 82,
+                      width: 74,
+                      height: 74,
                       borderRadius: "50%",
-                      background: "#08080a",
+                      background: "#030303",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 26,
+                      fontSize: 24,
                       fontWeight: 700,
                       color: "#fff",
                     }}
@@ -171,34 +147,17 @@ export async function GET(request: Request) {
                     {scores[i]}
                   </div>
                 </div>
-                <div
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 600,
-                    color: "#d4d4d8",
-                  }}
-                >
-                  {label}
-                </div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: "#d4d4d8" }}>{label}</div>
               </div>
             ))}
           </div>
 
-          <div
-            style={{
-              marginTop: 20,
-              fontSize: 16,
-              color: "#52525b",
-            }}
-          >
-            GitHubベースの市場価値診断 — 総合スコア {avg}/100
+          <div style={{ marginTop: 24, fontSize: 15, color: "#52525b" }}>
+            Total Score {avg}/100 · GitHub-based certification
           </div>
         </div>
       </div>
     ),
-    {
-      width: 1200,
-      height: 630,
-    }
+    { width: 1200, height: 630 }
   );
 }

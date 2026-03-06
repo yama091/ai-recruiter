@@ -7,31 +7,43 @@ function parseScores(scoresParam: string | null): number[] {
 }
 
 type Props = {
-  searchParams: Promise<{ scores?: string }>;
+  searchParams: Promise<{ scores?: string; title?: string; salary?: string; rank?: string }>;
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const params = await searchParams;
   const scores = params.scores ?? "70,70,70,70";
+  const title = params.title ?? "";
+  const salary = params.salary ?? "";
+  const rank = params.rank ?? "";
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  const ogParams = new URLSearchParams({ scores });
+  if (title) ogParams.set("title", title);
+  if (salary) ogParams.set("salary", salary);
+  if (rank) ogParams.set("rank", rank);
   const ogImageUrl = baseUrl
-    ? `${baseUrl}/api/og?scores=${encodeURIComponent(scores)}`
-    : `/api/og?scores=${encodeURIComponent(scores)}`;
+    ? `${baseUrl}/api/og?${ogParams.toString()}`
+    : `/api/og?${ogParams.toString()}`;
+
+  const metaTitle = title ? `${title} | AI Market Value Certification` : "Certification Summary | AI Market Value";
+  const metaDesc = title && (salary || rank)
+    ? `My title: ${title}. ${salary ? `Est. ${salary}. ` : ""}${rank ? `Rank ${rank}. ` : ""}Get your GitHub-based certification.`
+    : "GitHub-based market value certification. Technical, Contribution, Sustainability, Market scores.";
 
   return {
-    title: "鑑定結果サマリー | AI市場価値鑑定",
-    description: "GitHubベースの市場価値診断結果。技術力・貢献度・継続力・市場性を可視化しました。",
+    title: metaTitle,
+    description: metaDesc,
     openGraph: {
-      title: "鑑定結果サマリー | AI市場価値鑑定",
-      description: "GitHubベースの市場価値診断結果。あなたも1円単位の査定を。",
-      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: "AI市場価値鑑定 鑑定結果" }],
+      title: metaTitle,
+      description: metaDesc,
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: "AI Market Value Certification" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "鑑定結果サマリー | AI市場価値鑑定",
-      description: "GitHubベースの市場価値診断結果。",
+      title: metaTitle,
+      description: metaDesc,
       images: [ogImageUrl],
     },
   };
@@ -40,5 +52,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function SharePage({ searchParams }: Props) {
   const params = await searchParams;
   const scores = parseScores(params.scores ?? null);
-  return <ShareContent scores={scores} />;
+  const title = params.title ?? "";
+  const salary = params.salary ?? "";
+  const rank = params.rank ?? "";
+  return <ShareContent scores={scores} jobTitle={title} salaryDisplay={salary} rank={rank} />;
 }
