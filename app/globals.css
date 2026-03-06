@@ -204,6 +204,12 @@ body {
   box-shadow: 0 0 20px rgba(29, 78, 216, 0.25);
 }
 
+/* 企業用トップ: 1文字改行を防止 */
+.business-header-nowrap {
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
 /* 鑑定結果パネル — 背景に埋もれない・プロ品質の境界線と透明度 */
 .glass-panel {
   background: rgba(255, 255, 255, 0.14);
@@ -386,32 +392,32 @@ body {
 
 .stagger-4b { animation-delay: 0.4s; opacity: 0; }
 
-/* Golden VIP button — 転職・スキルアップの2本柱、思わず押したくなる */
+/* Golden VIP button — 転職・学習の2本柱、クリック率最大化 */
 .golden-vip-button {
   background: linear-gradient(135deg, #92400e 0%, #b45309 22%, #d97706 45%, #fbbf24 65%, #f59e0b 85%, #d97706 100%);
   background-size: 200% 200%;
   animation: gradient-shift 2.5s ease infinite;
   color: #fff;
   box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.5),
-    0 10px 36px rgba(217, 119, 6, 0.55),
-    0 0 48px rgba(251, 191, 36, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    0 0 0 1px rgba(251, 191, 36, 0.55),
+    0 12px 40px rgba(217, 119, 6, 0.6),
+    0 0 56px rgba(251, 191, 36, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.45);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .golden-vip-button:hover {
-  transform: scale(1.02);
+  transform: scale(1.03);
   box-shadow:
-    0 0 0 1px rgba(251, 191, 36, 0.6),
-    0 14px 44px rgba(217, 119, 6, 0.6),
-    0 0 64px rgba(251, 191, 36, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.45);
+    0 0 0 1px rgba(251, 191, 36, 0.7),
+    0 16px 48px rgba(217, 119, 6, 0.65),
+    0 0 72px rgba(251, 191, 36, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .golden-vip-button:active {
   transform: scale(0.98);
 }
 
-/* Print — A4 1枚完結、2枚目白紙強制排除、背景白・文字黒 */
+/* Print — 1枚目白紙解消、A4 1枚完結、背景白・文字黒 */
 @page {
   size: A4;
   margin: 6mm;
@@ -420,6 +426,8 @@ body {
 @media print {
   html,
   body {
+    margin: 0 !important;
+    padding: 0 !important;
     height: auto !important;
     overflow: visible !important;
     min-height: auto !important;
@@ -437,16 +445,17 @@ body {
     visibility: visible;
   }
   [data-print-report] {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     max-height: 277mm !important;
-    padding: 0 2px !important;
+    padding: 0 !important;
     margin: 0 !important;
     background: #fff !important;
     color: #000000 !important;
+    break-before: avoid !important;
     box-shadow: none !important;
     font-size: 8px !important;
     line-height: 1.25 !important;

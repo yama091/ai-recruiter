@@ -3,10 +3,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import HeaderButtons from "./HeaderButtons";
 
-// Xカード表示のため: metadataBase は NEXT_PUBLIC_APP_URL を最優先、OGPは必ず絶対URL
-const metadataBase = process.env.NEXT_PUBLIC_APP_URL
-  ? new URL(String(process.env.NEXT_PUBLIC_APP_URL).replace(/\/$/, ""))
-  : new URL(process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+// Xカード画像表示のため: metadataBase と OGP 画像を絶対URLで強制指定
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+const baseUrl = String(appUrl).replace(/\/$/, "");
+const metadataBase = new URL(baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`);
 const ogImageUrl = `${metadataBase.origin}/api/og`;
 
 export const metadata: Metadata = {

@@ -79,17 +79,17 @@ function SimpleMarkdown({ content }: { content: string }) {
       continue;
     }
     if (line.startsWith("### ")) {
-      result.push(<h3 key={i} className="mb-1 mt-5 text-base font-semibold text-zinc-200 first:mt-0">{line.slice(4)}</h3>);
+      result.push(<h3 key={i} className="mb-1 mt-5 text-base font-semibold text-zinc-100 first:mt-0">{line.slice(4)}</h3>);
     } else if (line.startsWith("## ")) {
       result.push(<h2 key={i} className="mb-1 mt-5 text-lg font-semibold text-white first:mt-0">{line.slice(3)}</h2>);
     } else if (line.startsWith("# ")) {
       result.push(<h1 key={i} className="mb-2 mt-5 text-xl font-bold text-white first:mt-0">{line.slice(2)}</h1>);
     } else if (line.startsWith("- ")) {
-      result.push(<li key={i} className="ml-4 list-disc text-zinc-300"><InlineBold text={line.slice(2)} /></li>);
+      result.push(<li key={i} className="ml-4 list-disc text-zinc-200"><InlineBold text={line.slice(2)} /></li>);
     } else if (line.trim() === "") {
       result.push(<div key={i} className="h-2" />);
     } else {
-      result.push(<p key={i} className="leading-relaxed text-zinc-300"><InlineBold text={line} /></p>);
+      result.push(<p key={i} className="leading-relaxed text-zinc-200"><InlineBold text={line} /></p>);
     }
     i++;
   }
@@ -163,7 +163,7 @@ export default function Home() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ githubUrl: githubUrl.trim(), locale }),
+        body: JSON.stringify({ githubUrl: githubUrl.trim(), locale, mode }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -312,10 +312,10 @@ export default function Home() {
             />
             {mode === "personal" ? t.badge : t.businessBadge}
           </div>
-          <h1 className="text-4xl font-semibold tracking-[-0.02em] text-white sm:text-5xl">
+          <h1 className={`text-4xl font-semibold tracking-[-0.02em] text-white sm:text-5xl ${mode === "business" ? "business-header-nowrap" : ""}`}>
             {mode === "personal" ? t.title : t.businessTitle}
           </h1>
-          <p className="mx-auto max-w-md text-[15px] leading-[1.7] text-zinc-200 sm:text-base">
+          <p className={`mx-auto max-w-md text-[15px] leading-[1.7] sm:text-base ${mode === "business" ? "business-header-nowrap text-zinc-200" : "text-zinc-200"}`}>
             {mode === "personal" ? t.subtitle : t.businessSubtitle}
           </p>
         </header>
@@ -415,7 +415,7 @@ export default function Home() {
                     </div>
                   </div>
                   {tierFeedback && (
-                    <p className="mt-4 text-center text-sm italic leading-relaxed text-zinc-300">
+                    <p className="mt-4 text-center text-sm italic leading-relaxed text-zinc-200">
                       &ldquo;{tierFeedback}&rdquo;
                     </p>
                   )}

@@ -180,15 +180,23 @@ function parseScoresFromContent(content: string): {
   return { markdown: content.trim(), scores: DEFAULT_SCORES, ...defaultMeta };
 }
 
-function buildSystemPrompt(locale: "ja" | "en"): string {
+function buildSystemPrompt(locale: "ja" | "en", mode: "personal" | "business"): string {
   const isJa = locale === "ja";
+  const isBusiness = mode === "business";
+  const jobTitleRule = isBusiness
+    ? (isJa
+      ? "Professional title only (e.g. Senior Engineer (Top 5%), Full-stack Architect, Backend Specialist). No playful terms like 魔術師. Recruiter-ready."
+      : "Professional title only (e.g. Senior Engineer (Top 5%), Full-stack Architect, Backend Specialist). No playful terms.")
+    : (isJa
+      ? "Playful, catchy Japanese title (e.g. TypeScriptの魔術師, 精密な設計士, API職人). No English."
+      : "Professional but appealing English title (e.g. Master of TypeScript, System Design Specialist). No Japanese.");
   return `You are an expert in engineer market value certification. Provide data-driven, credible assessments.
 
 【CRITICAL — LANGUAGE SEPARATION】
 - When output language is Japanese: the ENTIRE response must be in Japanese only (markdown body, jobTitle, tierFeedback). No English words.
 - When output language is English: the ENTIRE response must be in English only. No Japanese.
-- jobTitle: ${isJa ? "Japanese only. Use the most appealing phrasing (e.g. TypeScriptの魔術師, 精密な設計士, API職人). No English." : "English only. Use the most appealing phrasing (e.g. Master of TypeScript, System Design Specialist, API Architect). No Japanese."}
-- tierFeedback: ${isJa ? "Japanese only — one punchy line, no English." : "English only — one punchy line, no Japanese."}
+- jobTitle: ${jobTitleRule}
+- tierFeedback: ${isJa ? "Japanese only — one punchy line, no English." : "English only — one punchy line, natural business English. No Japanese."}
 
 【STRICT SALARY RULES (MANDATORY)】
 - Estimated annual salary MUST fall within 3,000,000–15,000,000 JPY. Never overestimate. Be conservative.
@@ -208,7 +216,7 @@ Output in the following format:
 
 2) Append exactly one JSON block. jobTitle and tierFeedback must be in the same language as the markdown (${isJa ? "Japanese" : "English"}).
 \`\`\`json
-{"technical": 70, "contribution": 65, "sustainability": 75, "market": 70, "jobTitle": "${isJa ? "TypeScriptの魔術師" : "Master of TypeScript"}", "salaryDisplay": "5,200,000円", "rank": "B", "tier": "B", "tierFeedback": "${isJa ? "実力はある。あとは星1つ、目に見える成果を増やせばSへ届く。" : "Solid foundation. Add visibility and measurable impact to reach S tier."}"}
+{"technical": 70, "contribution": 65, "sustainability": 75, "market": 70, "jobTitle": "${isBusiness ? (isJa ? "Senior Engineer (Top 5%)" : "Senior Engineer (Top 5%)") : (isJa ? "TypeScriptの魔術師" : "Master of TypeScript")}", "salaryDisplay": "5,200,000円", "rank": "B", "tier": "B", "tierFeedback": "${isJa ? "実力はある。あとは星1つ、目に見える成果を増やせばSへ届く。" : "Solid foundation. Add visibility and measurable impact to reach S tier."}"}
 \`\`\`
 - technical, contribution, sustainability, market: 0–100 integers
 - salaryDisplay: salary as string (within 3–15M JPY)
@@ -223,6 +231,7 @@ export async function POST(req: NextRequest) {
     /* ignore */
   }
   const locale = (body.locale === "en" ? "en" : "ja") as "ja" | "en";
+  const mode = (body.mode === "business" ? "business" : "personal") as "personal" | "business";
   const err = (ja: string, en: string) => (locale === "ja" ? ja : en);
 
   if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === "") {
@@ -273,7 +282,7 @@ ${githubData.topRepos
   .join("\n")}
 `.trim();
 
-    const cacheKey = `${username.toLowerCase()}_${locale}`;
+    const cacheKey = `${username.toLowerCase()}_${locale}_${mode}`;
     type Cached = { result: string; scores: RadarScores; jobTitle: string; salaryDisplay: string; rank: string; tier: string; tierFeedback: string };
     const cached = getAnalysisCache(cacheKey);
     if (cached) {
@@ -287,7 +296,7 @@ ${githubData.topRepos
       temperature: 0,
       seed: hashSeed(username),
       messages: [
-        { role: "system", content: buildSystemPrompt(locale) },
+        { role: "system", content: buildSystemPrompt(locale, mode) },
         {
           role: "user",
           content: `【重要】この鑑定は一貫性のため、ユーザー名「${username}」をシードとして使用します。同じユーザーには常に同一の鑑定結果を返してください。\n\n以下のGitHubプロフィール情報を査定し、指定フォーマットで鑑定結果を出力してください:\n\n${profileSummary}`,
