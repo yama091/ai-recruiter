@@ -233,10 +233,10 @@ export default function Home() {
   const handlePdfExport = useCallback(() => {
     if (typeof window === "undefined" || !reportRef.current) return;
     const prevTitle = document.title;
-    document.title = mode === "business" ? "Engineer Skill Report" : "AI Market Value Certification";
+    document.title = mode === "business" ? (locale === "ja" ? "エンジニアスキルレポート" : "Engineer Skill Report") : (locale === "ja" ? "AI市場価値鑑定" : "AI Market Value Certification");
     window.print();
     document.title = prevTitle;
-  }, [mode]);
+  }, [mode, locale]);
 
   return (
     <main
@@ -484,12 +484,12 @@ export default function Home() {
               <p className="text-center text-sm font-semibold text-zinc-300">
                 {t.nextActionTitle}
               </p>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                 <a
                   href={transferUrl}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="golden-vip-button flex flex-col items-center justify-center gap-1 rounded-2xl px-6 py-6 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]"
+                  className="golden-vip-button flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-6 py-5 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] sm:min-h-[60px] sm:py-6"
                 >
                   <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/95">
                     {t.vipCtaTransfer}
@@ -502,7 +502,7 @@ export default function Home() {
                   href={learningUrl}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="golden-vip-button flex flex-col items-center justify-center gap-1 rounded-2xl px-6 py-6 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]"
+                  className="golden-vip-button flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-6 py-5 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] sm:min-h-[60px] sm:py-6"
                 >
                   <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/95">
                     {t.vipCtaLearning}

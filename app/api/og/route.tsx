@@ -13,16 +13,17 @@ function parseScores(scoresParam: string | null): number[] {
   ];
 }
 
-const LABELS = ["Technical", "Contribution", "Sustainability", "Market"];
+const LABELS = ["技術力", "貢献度", "継続力", "市場性"];
+const LABELS_BUSINESS = ["技術スタックの専門性", "コードの保守性", "継続的な学習習慣", "市場価値"];
 
 const TIER_STYLES: Record<string, { bg: string; label: string }> = {
-  "S+": { bg: "linear-gradient(135deg, #fbbf24, #d97706)", label: "GODLY" },
-  S: { bg: "linear-gradient(135deg, #a78bfa, #7c3aed)", label: "ELITE" },
-  A: { bg: "linear-gradient(135deg, #6366f1, #4f46e5)", label: "SENIOR" },
-  B: { bg: "linear-gradient(135deg, #22d3ee, #06b6d4)", label: "SOLID" },
-  C: { bg: "linear-gradient(135deg, #34d399, #10b981)", label: "GROWING" },
-  D: { bg: "linear-gradient(135deg, #94a3b8, #64748b)", label: "RISING" },
-  E: { bg: "linear-gradient(135deg, #64748b, #475569)", label: "JUNIOR" },
+  "S+": { bg: "linear-gradient(135deg, #fbbf24, #d97706)", label: "神域" },
+  S: { bg: "linear-gradient(135deg, #a78bfa, #7c3aed)", label: "最上級" },
+  A: { bg: "linear-gradient(135deg, #6366f1, #4f46e5)", label: "上級" },
+  B: { bg: "linear-gradient(135deg, #22d3ee, #06b6d4)", label: "中級" },
+  C: { bg: "linear-gradient(135deg, #34d399, #10b981)", label: "成長中" },
+  D: { bg: "linear-gradient(135deg, #94a3b8, #64748b)", label: "発展途上" },
+  E: { bg: "linear-gradient(135deg, #64748b, #475569)", label: "初級" },
 };
 
 function decode(s: string | null): string {
@@ -101,7 +102,7 @@ export async function GET(request: Request) {
                   boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
                 }}
               >
-                <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4, letterSpacing: "0.15em" }}>EST. MARKET VALUE</div>
+                <div style={{ fontSize: 10, color: "#64748b", marginBottom: 4, letterSpacing: "0.15em" }}>推定市場価格</div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: "#1d4ed8" }}>{decode(salary)}</div>
               </div>
             )}
@@ -115,7 +116,7 @@ export async function GET(request: Request) {
               zIndex: 1,
             }}
           >
-            {LABELS.map((label, i) => (
+            {LABELS_BUSINESS.map((label, i) => (
               <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
                 <div
                   style={{
@@ -151,7 +152,7 @@ export async function GET(request: Request) {
             ))}
           </div>
           <div style={{ fontSize: 13, fontWeight: 600, color: "#64748b", marginTop: -16 }}>
-            Total Score {avg}/100 · GitHub-based assessment
+            総合スコア {avg}/100 · GitHubベースの鑑定
           </div>
         </div>
       ),

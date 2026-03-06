@@ -122,7 +122,7 @@ export default function ShareContent({ scores, jobTitle, salaryDisplay, rank, ti
                 <PolarGrid stroke="rgba(255,255,255,0.1)" />
                 <PolarAngleAxis dataKey="subject" tick={{ fill: "#a1a1aa", fontSize: 12 }} />
                 <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: "#71717a", fontSize: 10 }} />
-                <Radar name="Score" dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.4} strokeWidth={2} />
+                <Radar name={t.radarScore} dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.4} strokeWidth={2} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
               </RadarChart>
             </ResponsiveContainer>
