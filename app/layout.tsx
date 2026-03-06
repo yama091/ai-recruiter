@@ -5,15 +5,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <ClerkProvider>
       <html lang="ja">
-        <body className="antialiased">
-          <header className="flex justify-end p-4 gap-4 bg-slate-900 border-b border-slate-800">
+        <body className="antialiased bg-[#0a0a0f] text-zinc-100">
+          <header className="sticky top-0 z-50 flex justify-end gap-3 border-b border-white/[0.06] bg-[#0a0a0f]/80 px-4 py-3 backdrop-blur-xl">
             <SignInButton mode="modal">
-              <button className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md transition">
+              <button className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm font-medium text-zinc-200 transition-colors hover:bg-white/[0.08]">
                 サインイン
               </button>
             </SignInButton>
             <SignUpButton mode="modal">
-              <button className="text-sm font-medium text-white border border-slate-700 hover:bg-slate-800 px-4 py-2 rounded-md transition">
+              <button className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-zinc-100">
                 新規登録
               </button>
             </SignUpButton>
