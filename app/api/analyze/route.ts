@@ -3,13 +3,12 @@ import OpenAI from "openai";
 
 export const runtime = "nodejs";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 function extractUsername(url: string): string | null {
   try {
-    const u = new URL(url);
+    const u = new URL(url.trim());
+    if (!/^https?:\/\/github\.com/i.test(u.origin)) return null;
     const parts = u.pathname.split("/").filter(Boolean);
     return parts[0] || null;
   } catch {
@@ -20,17 +19,23 @@ function extractUsername(url: string): string | null {
 async function fetchGitHubData(username: string) {
   const headers: Record<string, string> = {
     Accept: "application/vnd.github+json",
+    "User-Agent": "ai-recruiter-app",
   };
   if (process.env.GITHUB_TOKEN) {
     headers["Authorization"] = `Bearer ${process.env.GITHUB_TOKEN}`;
   }
 
   const [userRes, reposRes] = await Promise.all([
-    fetch(`https://api.github.com/users/${username}`, { headers }),
-    fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=10`, { headers }),
+    fetch(`https://api.github.com/users/${username}`, { headers, cache: "no-store" }),
+    fetch(
+      `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`,
+      { headers, cache: "no-store" }
+    ),
   ]);
 
-  if (!userRes.ok) throw new Error(`GitHubユーザーが見つかりません: ${username}`);
+  if (!userRes.ok) {
+    throw new Error(`GitHubユーザーが見つかりません: ${username}`);
+  }
 
   const user = await userRes.json();
   const repos = reposRes.ok ? await reposRes.json() : [];
@@ -53,7 +58,7 @@ async function fetchGitHubData(username: string) {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([lang]) => lang),
-    topRepos: repos.slice(0, 5).map((r: any) => ({
+    topRepos: repos.slice(0, 5).map((r: { name: string; stargazers_count: number; description?: string; language?: string }) => ({
       name: r.name,
       stars: r.stargazers_count,
       description: r.description || "",
@@ -62,17 +67,43 @@ async function fetchGitHubData(username: string) {
   };
 }
 
+const SYSTEM_PROMPT = `あなたは年収1000万超えを狙うハイエンドエンジニア専用の査定エンジンです。高額キャリアコンサルタントとして、データに基づいた冷徹で説得力のある鑑定を行います。
+
+必ず以下の形式で、日本語のMarkdownのみを出力してください。表・太字を多用し、公式な鑑定書のような見た目にします。
+
+- **見出し**: ### 【鑑定結果】市場価値診断書 から始める
+- **想定年収**: 1円単位で提示（例: 12,345,678円）
+- **技術力**: S / A / B / C / D の5段階で判定し、理由を1行で
+- **技術スタック・GitHub活動・市場需給**: 箇条書きで簡潔に分析
+- **あと300万上げるために習得すべき技術**: 3つを具体的に提示（技術名と習得の優先度）
+- 全体は200〜300文字程度の高密度な情報に凝縮すること。励ましや曖昧な表現は使わず、事実とデータに基づいたプロフェッショナルな口調で。`;
+
 export async function POST(req: NextRequest) {
+  if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === "") {
+    console.error("OPENAI_API_KEY is not set");
+    return NextResponse.json(
+      { error: "鑑定サービスは現在設定中のためご利用できません。しばらくしてからお試しください。" },
+      { status: 503 }
+    );
+  }
+
   try {
-    const { githubUrl } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const githubUrl = typeof body.githubUrl === "string" ? body.githubUrl.trim() : "";
 
     if (!githubUrl) {
-      return NextResponse.json({ error: "GitHubのURLを入力してください" }, { status: 400 });
+      return NextResponse.json(
+        { error: "GitHubのURLを入力してください" },
+        { status: 400 }
+      );
     }
 
     const username = extractUsername(githubUrl);
     if (!username) {
-      return NextResponse.json({ error: "正しいGitHub URLを入力してください" }, { status: 400 });
+      return NextResponse.json(
+        { error: "正しいGitHubのURLを入力してください（例: https://github.com/username）" },
+        { status: 400 }
+      );
     }
 
     const githubData = await fetchGitHubData(username);
@@ -87,28 +118,41 @@ export async function POST(req: NextRequest) {
 場所: ${githubData.location}
 主要言語: ${githubData.topLanguages.join(", ")}
 主なリポジトリ:
-${githubData.topRepos.map((r: {name: string; stars: number; language: string; description: string}) => `  - ${r.name}（★${r.stars}）${r.language} ${r.description}`).join("\n")}
-    `.trim();
+${githubData.topRepos
+  .map(
+    (r: { name: string; stars: number; language: string; description: string }) =>
+      `  - ${r.name}（★${r.stars}）${r.language} ${r.description}`
+  )
+  .join("\n")}
+`.trim();
+
+    const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        {
-          role: "system",
-          content: "あなたはエンジニア専用の冷徹でプロフェッショナルな査定エージェントです。GitHubプロフィール情報を元に、想定年収を1円単位で算出し、技術力をS〜Dの5段階で評価し、年収を300万上げるために今後3ヶ月で習得すべき3つの技術を提示してください。Markdownの表や太字を使い、公式な鑑定書のような見た目で出力してください。",
-        },
+        { role: "system", content: SYSTEM_PROMPT },
         {
           role: "user",
-          content: `以下のGitHubプロフィール情報を査定してください:\n\n${profileSummary}`,
+          content: `以下のGitHubプロフィール情報を査定し、指定フォーマットで鑑定結果を出力してください:\n\n${profileSummary}`,
         },
       ],
     });
 
-    return NextResponse.json({ result: completion.choices[0].message.content });
-  } catch (error: any) {
-    console.error(error);
+    const content = completion.choices[0]?.message?.content?.trim();
+    if (!content) {
+      return NextResponse.json(
+        { error: "鑑定結果の生成に失敗しました。再実行してください。" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ result: content });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "査定に失敗しました";
+    console.error("Analyze API error:", error);
     return NextResponse.json(
-      { error: error.message || "査定に失敗しました" },
+      { error: message },
       { status: 500 }
     );
   }

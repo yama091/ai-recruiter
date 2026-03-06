@@ -1,5 +1,4 @@
-import { ClerkProvider, SignInButton, SignUpButton, SignIn, SignOutButton, UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { ClerkProvider, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
 import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
