@@ -3,28 +3,25 @@ import type { Metadata } from "next";
 import "./globals.css";
 import HeaderButtons from "./HeaderButtons";
 
-// Xカード: 絶対URL必須。metadataBase と OGP 画像をフルURLで指定
-const metadataBase = new URL(
-  process.env.NEXT_PUBLIC_APP_URL || "https://ai-recruiter-4o7e.vercel.app"
-);
-const ogImageAbsoluteUrl = `${metadataBase.origin.replace(/\/$/, "")}/api/og`;
+// Xカード: 絶対パスを直接指定（環境変数を使わず固定）
+const OGP_IMAGE_URL = "https://ai-recruiter-4o7e.vercel.app/api/og";
 
 export const metadata: Metadata = {
-  metadataBase,
+  metadataBase: new URL("https://ai-recruiter-4o7e.vercel.app"),
   title: "AI市場価値鑑定 | GitHubからあなたの市場価値を可視化",
   description: "GitHubデータに基づき、エンジニアの市場価値を鑑定。推定年収・格付け・スキルレーダーを1枚の鑑定書で。",
   openGraph: {
     type: "website",
     locale: "ja_JP",
-    url: metadataBase.origin,
+    url: "https://ai-recruiter-4o7e.vercel.app",
     siteName: "AI市場価値鑑定",
-    images: [{ url: ogImageAbsoluteUrl, width: 1200, height: 630, alt: "AI市場価値鑑定" }],
+    images: [OGP_IMAGE_URL],
   },
   twitter: {
     card: "summary_large_image" as const,
     title: "AI市場価値鑑定 | GitHubからあなたの市場価値を可視化",
     description: "GitHubデータに基づき、エンジニアの市場価値を鑑定。推定年収・格付け・スキルレーダーを1枚の鑑定書で。",
-    images: [ogImageAbsoluteUrl],
+    images: [OGP_IMAGE_URL],
   },
 };
 
