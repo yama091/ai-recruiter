@@ -216,8 +216,9 @@ export default function Home() {
                 ...(tier && { tier }),
                 ...(tierFeedback && { feedback: tierFeedback }),
                 mode: mode,
+                v: "final",
               }).toString()}`
-            : window.location.href
+            : `${window.location.href}${window.location.href.includes("?") ? "&" : "?"}v=final`
         )
       : "";
 

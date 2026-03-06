@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import HeaderButtons from "./HeaderButtons";
 
-// Xカード: 絶対パスを直接指定・キャッシュバイパス用 ?v=1
-const OGP_IMAGE_URL = "https://ai-recruiter-4o7e.vercel.app/api/og?v=1";
+// Xカード: 超・強制設定（環境変数なし・フルURL・キャッシュバイパス ?v=final）
+const OGP_IMAGE_URL = "https://ai-recruiter-4o7e.vercel.app/api/og?v=final";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ai-recruiter-4o7e.vercel.app"),
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     card: "summary_large_image" as const,
     title: "AI市場価値鑑定 | GitHubからあなたの市場価値を可視化",
     description: "GitHubデータに基づき、エンジニアの市場価値を鑑定。推定年収・格付け・スキルレーダーを1枚の鑑定書で。",
-    images: [OGP_IMAGE_URL],
+    images: ["https://ai-recruiter-4o7e.vercel.app/api/og?v=final"],
   },
 };
 
