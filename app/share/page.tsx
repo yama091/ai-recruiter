@@ -7,7 +7,7 @@ function parseScores(scoresParam: string | null): number[] {
 }
 
 type Props = {
-  searchParams: Promise<{ scores?: string; title?: string; salary?: string; rank?: string }>;
+  searchParams: Promise<{ scores?: string; title?: string; salary?: string; rank?: string; tier?: string; feedback?: string }>;
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -16,6 +16,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const title = params.title ?? "";
   const salary = params.salary ?? "";
   const rank = params.rank ?? "";
+  const tier = params.tier ?? "";
+  const feedback = params.feedback ?? "";
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
@@ -23,6 +25,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   if (title) ogParams.set("title", title);
   if (salary) ogParams.set("salary", salary);
   if (rank) ogParams.set("rank", rank);
+  if (tier) ogParams.set("tier", tier);
+  if (feedback) ogParams.set("feedback", feedback);
   const ogImageUrl = baseUrl
     ? `${baseUrl}/api/og?${ogParams.toString()}`
     : `/api/og?${ogParams.toString()}`;
@@ -55,5 +59,16 @@ export default async function SharePage({ searchParams }: Props) {
   const title = params.title ?? "";
   const salary = params.salary ?? "";
   const rank = params.rank ?? "";
-  return <ShareContent scores={scores} jobTitle={title} salaryDisplay={salary} rank={rank} />;
+  const tier = params.tier ?? "";
+  const tierFeedback = params.feedback ?? "";
+  return (
+    <ShareContent
+      scores={scores}
+      jobTitle={title}
+      salaryDisplay={salary}
+      rank={rank}
+      tier={tier}
+      tierFeedback={tierFeedback}
+    />
+  );
 }

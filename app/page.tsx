@@ -11,6 +11,7 @@ import {
   Legend,
 } from "recharts";
 import { translations, getLocaleFromBrowser, type Locale } from "../lib/i18n";
+import { getTierConfig } from "../lib/tiers";
 
 const RADAR_KEYS = ["technical", "contribution", "sustainability", "market"] as const;
 
@@ -137,6 +138,8 @@ export default function Home() {
   const [jobTitle, setJobTitle] = useState("");
   const [salaryDisplay, setSalaryDisplay] = useState("");
   const [rank, setRank] = useState("");
+  const [tier, setTier] = useState("");
+  const [tierFeedback, setTierFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -166,6 +169,8 @@ export default function Home() {
         setJobTitle("");
         setSalaryDisplay("");
         setRank("");
+        setTier("");
+        setTierFeedback("");
         setError(data.error || t.errorAnalyzeFailed);
         return;
       }
@@ -174,12 +179,16 @@ export default function Home() {
       setJobTitle(data.jobTitle ?? "");
       setSalaryDisplay(data.salaryDisplay ?? "");
       setRank(data.rank ?? "");
+      setTier(data.tier ?? "");
+      setTierFeedback(data.tierFeedback ?? "");
     } catch {
       setResult("");
       setScores(null);
       setJobTitle("");
       setSalaryDisplay("");
       setRank("");
+      setTier("");
+      setTierFeedback("");
       setError(t.errorNetwork);
     } finally {
       setLoading(false);
@@ -196,6 +205,8 @@ export default function Home() {
                 ...(jobTitle && { title: jobTitle }),
                 ...(salaryDisplay && { salary: salaryDisplay }),
                 ...(rank && { rank }),
+                ...(tier && { tier }),
+                ...(tierFeedback && { feedback: tierFeedback }),
               }).toString()}`
             : window.location.href
         )
@@ -211,11 +222,43 @@ export default function Home() {
     ? (process.env.NEXT_PUBLIC_AFFILIATE_SIDEBIZ ?? DEFAULT_SIDEBIZ_JA)
     : (process.env.NEXT_PUBLIC_AFFILIATE_SIDEBIZ_EN ?? DEFAULT_SIDEBIZ_EN);
 
+  const tierCfg = tier ? getTierConfig(tier) : null;
+  const tierLabel = tierCfg ? (locale === "ja" ? tierCfg.labelJa : tierCfg.labelEn) : "";
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#030303] font-sans text-zinc-100 animate-page-in">
       <div className="pointer-events-none fixed inset-0 bg-mesh" aria-hidden />
+      <div className="meteors-layer" aria-hidden>
+        {[...Array(7)].map((_, i) => (
+          <div key={i} className="meteor" />
+        ))}
+      </div>
+      {loading && (
+        <div className="scan-overlay" aria-hidden>
+          <div className="absolute inset-0 bg-[#030303]/20" />
+        </div>
+      )}
 
-      <div className="relative mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
+      <div className="fixed top-14 right-4 z-50 flex items-center gap-0 rounded-xl border border-white/[0.1] bg-black/60 backdrop-blur-xl">
+        <button
+          type="button"
+          onClick={() => setLocale("ja")}
+          className={`rounded-l-xl px-3 py-2 text-xs font-semibold transition-colors ${locale === "ja" ? "bg-indigo-500/80 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+          aria-label={t.langJa}
+        >
+          JA
+        </button>
+        <button
+          type="button"
+          onClick={() => setLocale("en")}
+          className={`rounded-r-xl px-3 py-2 text-xs font-semibold transition-colors ${locale === "en" ? "bg-indigo-500/80 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+          aria-label={t.langEn}
+        >
+          EN
+        </button>
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
         <header className="space-y-6 text-center">
           <div
             className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 backdrop-blur-xl"
@@ -262,63 +305,118 @@ export default function Home() {
         {result && (
           <section className="mt-14 space-y-8">
             {jobTitle && (
-              <div className="animate-fade-in-up stagger-1 rounded-2xl glass-panel-strong overflow-hidden p-6 sm:p-8">
-                <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                  {t.jobTitleLabel}
-                </p>
-                <p className="text-center text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-violet-300 to-fuchsia-300 sm:text-3xl">
-                  {jobTitle}
-                </p>
-                {(salaryDisplay || rank) && (
-                  <div className="mt-4 flex flex-wrap justify-center gap-4">
-                    {salaryDisplay && (
-                      <span className="rounded-lg border border-white/[0.1] bg-white/[0.05] px-4 py-2 text-sm font-semibold text-white">
-                        {salaryDisplay}
-                      </span>
-                    )}
-                    {rank && (
-                      <span className="rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-4 py-2 text-sm font-bold text-indigo-200">
-                        Rank {rank}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {scores && (
-              <GlassCard className="animate-fade-in-up stagger-2 rounded-2xl glass-panel-strong overflow-hidden p-6 sm:p-8">
-                <p className="mb-4 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                  {t.radarTitle}
-                </p>
-                <h2 className="text-center text-lg font-semibold tracking-tight text-white">
-                  {t.radarHeading}
-                </h2>
-                <div className="mx-auto mt-6 h-[280px] w-full sm:h-[320px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart
-                      data={RADAR_KEYS.map((key, i) => ({
-                        subject: t.radarLabels[i],
-                        value: scores[key],
-                        fullMark: 100,
-                      }))}
-                    >
-                      <PolarGrid stroke="rgba(255,255,255,0.12)" />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: "#a1a1aa", fontSize: 11 }} />
-                      <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: "#71717a", fontSize: 10 }} />
-                      <Radar name={t.radarScore} dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.35} strokeWidth={2} />
-                      <Legend wrapperStyle={{ fontSize: 11 }} />
-                    </RadarChart>
-                  </ResponsiveContainer>
+              <GlassCard className="animate-fade-in-up stagger-1 card-gradient-border rounded-2xl overflow-hidden">
+                <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
+                  <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    {t.jobTitleLabel}
+                  </p>
+                  <p className="text-center text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-violet-300 to-fuchsia-300 sm:text-3xl">
+                    {jobTitle}
+                  </p>
+                  {(salaryDisplay || rank) && (
+                    <div className="mt-4 flex flex-wrap justify-center gap-4">
+                      {salaryDisplay && (
+                        <span className="rounded-lg border border-white/[0.1] bg-white/[0.05] px-4 py-2 text-sm font-semibold text-white">
+                          {salaryDisplay}
+                        </span>
+                      )}
+                      {rank && (
+                        <span className="rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-4 py-2 text-sm font-bold text-indigo-200">
+                          Rank {rank}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </GlassCard>
             )}
 
-            <div className="animate-fade-in-up stagger-3 rounded-2xl glass-panel-strong overflow-hidden p-6 sm:p-8">
+            {tier && tierCfg && (
+              <GlassCard className="animate-fade-in-up stagger-2 card-gradient-border rounded-2xl overflow-hidden">
+                <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
+                  <p className="mb-3 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    {t.tierBadge}
+                  </p>
+                  <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-6">
+                    <div
+                      className="flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-black"
+                      style={{
+                        background: tierCfg.gradient,
+                        color: "#030303",
+                        boxShadow: `0 0 24px ${tierCfg.color}40`,
+                      }}
+                    >
+                      <span className="opacity-90">{tierCfg.badgeSymbol}</span>
+                      <span>Tier {tier}</span>
+                      <span className="text-sm font-bold opacity-90">({tierLabel})</span>
+                    </div>
+                  </div>
+                  {tierFeedback && (
+                    <p className="mt-4 text-center text-sm italic leading-relaxed text-zinc-400">
+                      &ldquo;{tierFeedback}&rdquo;
+                    </p>
+                  )}
+                </div>
+              </GlassCard>
+            )}
+
+            {scores && (
+              <GlassCard className="animate-fade-in-up stagger-3 card-gradient-border rounded-2xl overflow-hidden">
+                <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
+                  <p className="mb-4 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    {t.radarTitle}
+                  </p>
+                  <h2 className="text-center text-lg font-semibold tracking-tight text-white">
+                    {t.radarHeading}
+                  </h2>
+                  <div className="mx-auto mt-6 h-[280px] w-full sm:h-[320px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart
+                        data={RADAR_KEYS.map((key, i) => ({
+                          subject: t.radarLabels[i],
+                          value: scores[key],
+                          fullMark: 100,
+                        }))}
+                      >
+                        <PolarGrid stroke="rgba(255,255,255,0.12)" />
+                        <PolarAngleAxis dataKey="subject" tick={{ fill: "#a1a1aa", fontSize: 11 }} />
+                        <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: "#71717a", fontSize: 10 }} />
+                        <Radar name={t.radarScore} dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.35} strokeWidth={2} />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </GlassCard>
+            )}
+
+            <GlassCard className="animate-fade-in-up stagger-4 card-gradient-border rounded-2xl overflow-hidden">
+              <div className="rounded-2xl glass-panel-strong overflow-hidden p-6 sm:p-8">
               <SimpleMarkdown content={result} />
+              </div>
+            </GlassCard>
+
+            <div className="animate-fade-in-up stagger-4b rounded-2xl overflow-hidden">
+              <a
+                href={transferUrl}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="golden-vip-button block w-full rounded-2xl px-6 py-5 text-center text-lg font-bold transition-all duration-300 hover:opacity-95 hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                  {t.vipTitle}
+                </span>
+                <span className="mt-1 block text-[13px] font-medium text-amber-100/90">
+                  {t.vipSubtitle}
+                </span>
+                <span className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-bold text-white backdrop-blur-sm">
+                  {t.vipCta} →
+                </span>
+              </a>
             </div>
 
-            <GlassCard className="animate-fade-in-up stagger-4 rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
+            <GlassCard className="animate-fade-in-up stagger-5 card-gradient-border rounded-2xl overflow-hidden">
+              <div className="rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
               <h2 className="text-center text-lg font-semibold tracking-tight text-white">
                 {t.threeStepsTitle}
               </h2>
@@ -359,9 +457,10 @@ export default function Home() {
                 ))}
               </div>
               <p className="mt-5 text-center text-[11px] text-zinc-600">{t.affiliateNote}</p>
+              </div>
             </GlassCard>
 
-            <div className="animate-fade-in-up stagger-5 space-y-4">
+            <div className="animate-fade-in-up stagger-6 space-y-4">
               <p className="text-center text-[11px] font-medium uppercase tracking-widest text-zinc-600">
                 {t.shareLabel}
               </p>
@@ -385,7 +484,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="animate-fade-in-up stagger-6 rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
+            <div className="animate-fade-in-up stagger-7 rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
               <p className="mb-1 text-center text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
                 {t.recommendLabel}
               </p>
