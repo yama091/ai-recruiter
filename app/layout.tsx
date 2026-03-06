@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import HeaderButtons from "./HeaderButtons";
 
-// Xカード: 絶対パスを直接指定（環境変数を使わず固定）
-const OGP_IMAGE_URL = "https://ai-recruiter-4o7e.vercel.app/api/og";
+// Xカード: 絶対パスを直接指定・キャッシュバイパス用 ?v=1
+const OGP_IMAGE_URL = "https://ai-recruiter-4o7e.vercel.app/api/og?v=1";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ai-recruiter-4o7e.vercel.app"),
