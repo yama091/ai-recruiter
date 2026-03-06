@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     images: [{ url: ogImageAbsoluteUrl, width: 1200, height: 630, alt: "AI市場価値鑑定" }],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary_large_image" as const,
     title: "AI市場価値鑑定 | GitHubからあなたの市場価値を可視化",
     description: "GitHubデータに基づき、エンジニアの市場価値を鑑定。推定年収・格付け・スキルレーダーを1枚の鑑定書で。",
     images: [ogImageAbsoluteUrl],

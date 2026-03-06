@@ -204,24 +204,24 @@ body {
   box-shadow: 0 0 20px rgba(29, 78, 216, 0.25);
 }
 
-/* Glassmorphism — readability + cyber aesthetic on #08080a */
+/* 鑑定結果パネル — 背景に埋もれない・プロ品質の境界線と透明度 */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.14);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.25) inset,
-    0 2px 8px rgba(0, 0, 0, 0.3);
+    0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+    0 4px 16px rgba(0, 0, 0, 0.35);
 }
 
 .glass-panel-strong {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.18) inset,
     0 32px 64px -24px rgba(0, 0, 0, 0.5);
 }
 
@@ -487,6 +487,11 @@ body {
   [data-print-report] [class*="h-\[280px\]"],
   [data-print-report] [class*="h-[320px]"] {
     background: #ffffff !important;
+  }
+  [data-print-report] .print-radar-bg svg,
+  [data-print-report] .print-radar-bg line,
+  [data-print-report] .print-radar-bg path {
+    stroke: #000000 !important;
   }
   [data-print-report] [class*="h-\[280px\]"],
   [data-print-report] [class*="h-[320px]"] {

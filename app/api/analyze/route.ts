@@ -187,7 +187,7 @@ function buildSystemPrompt(locale: "ja" | "en"): string {
 【CRITICAL — LANGUAGE SEPARATION】
 - When output language is Japanese: the ENTIRE response must be in Japanese only (markdown body, jobTitle, tierFeedback). No English words.
 - When output language is English: the ENTIRE response must be in English only. No Japanese.
-- jobTitle: ${isJa ? "Japanese only — playful, catchy title (e.g. TypeScriptの魔術師, 精密な設計士, API職人). Most appealing phrasing in Japanese." : "English only — professional title (e.g. Master of TypeScript Architecture, System Design Specialist, API Architect). Most appealing phrasing in English."}
+- jobTitle: ${isJa ? "Japanese only. Create a share-worthy, catchy title (e.g. TypeScriptの魔術師, 精密な設計士, API職人). Use the most appealing phrasing in Japanese so users want to share it." : "English only. Create a share-worthy, professional title (e.g. Master of TypeScript Architecture, System Design Specialist, API Architect). Use the most appealing phrasing in English so users want to share it."}
 - tierFeedback: ${isJa ? "Japanese only — one punchy line, no English." : "English only — one punchy line, no Japanese."}
 
 【STRICT SALARY RULES (MANDATORY)】

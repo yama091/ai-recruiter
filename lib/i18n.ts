@@ -42,7 +42,7 @@ export const translations = {
     sharePageBack: "鑑定トップへ戻る",
     radarLabels: ["技術力", "貢献度", "継続力", "市場性"] as const,
     businessBadge: "採用・人材評価向け",
-    businessTitle: "エンジニアの実力をAIが客観的にスコアリング。採用・評価業務を30秒で効率化します。",
+    businessTitle: "エンジニアの技術力をAIが客観的にスコアリング。採用・評価業務を30秒で効率化します。",
     businessSubtitle: "GitHubプロフィールから、技術の深さ・保守性・学習習慣・市場需要の4軸でレポート化。採用資料および評価面談にそのままご活用いただけます。",
     businessRadarTitle: "採用担当者向けスキルプロファイル",
     businessRadarHeading: "エンジニア評価レーダー",
