@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import HeaderButtons from "./HeaderButtons";
 
-// Xカード画像表示のため: metadataBase と OGP 画像を絶対URLで強制指定
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-const baseUrl = String(appUrl).replace(/\/$/, "");
-const metadataBase = new URL(baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`);
-const ogImageUrl = `${metadataBase.origin}/api/og`;
+// Xカード: 絶対URL必須。metadataBase と OGP 画像をフルURLで指定
+const metadataBase = new URL(
+  process.env.NEXT_PUBLIC_APP_URL || "https://ai-recruiter-4o7e.vercel.app"
+);
+const ogImageAbsoluteUrl = `${metadataBase.origin.replace(/\/$/, "")}/api/og`;
 
 export const metadata: Metadata = {
   metadataBase,
@@ -18,13 +18,13 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: metadataBase.origin,
     siteName: "AI市場価値鑑定",
-    images: [{ url: ogImageUrl, width: 1200, height: 630, alt: "AI市場価値鑑定" }],
+    images: [{ url: ogImageAbsoluteUrl, width: 1200, height: 630, alt: "AI市場価値鑑定" }],
   },
   twitter: {
     card: "summary_large_image" as const,
     title: "AI市場価値鑑定 | GitHubからあなたの市場価値を可視化",
     description: "GitHubデータに基づき、エンジニアの市場価値を鑑定。推定年収・格付け・スキルレーダーを1枚の鑑定書で。",
-    images: [ogImageUrl],
+    images: [ogImageAbsoluteUrl],
   },
 };
 

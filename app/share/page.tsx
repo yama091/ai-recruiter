@@ -21,17 +21,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const mode = params.mode ?? "personal";
   const baseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ai-recruiter-4o7e.vercel.app")
   ).replace(/\/$/, "");
+  const origin = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
   const ogParams = new URLSearchParams({ scores, mode });
   if (title) ogParams.set("title", title);
   if (salary) ogParams.set("salary", salary);
   if (rank) ogParams.set("rank", rank);
   if (tier) ogParams.set("tier", tier);
   if (feedback) ogParams.set("feedback", feedback);
-  const ogImagePath = `/api/og?${ogParams.toString()}`;
-  const base = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`;
-  const ogImageUrl = `${base}${ogImagePath}`;
+  const ogImageAbsoluteUrl = `${origin}/api/og?${ogParams.toString()}`;
 
   const metaTitle = title ? `${title} | AI市場価値鑑定` : "鑑定結果 | AI市場価値鑑定";
   const metaDesc =
@@ -45,15 +44,15 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     openGraph: {
       title: metaTitle,
       description: metaDesc,
-      url: `${baseUrl}/share?${ogParams.toString()}`,
+      url: `${origin}/share?${ogParams.toString()}`,
       type: "website",
-      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: "AI市場価値鑑定ポスター" }],
+      images: [{ url: ogImageAbsoluteUrl, width: 1200, height: 630, alt: "AI市場価値鑑定ポスター" }],
     },
     twitter: {
-      card: "summary_large_image",
+      card: "summary_large_image" as const,
       title: metaTitle,
       description: metaDesc,
-      images: [ogImageUrl],
+      images: [ogImageAbsoluteUrl],
     },
   };
 }
