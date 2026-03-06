@@ -5,6 +5,7 @@ import "./globals.css";
 const baseUrl =
   process.env.NEXT_PUBLIC_APP_URL ||
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+const ogImageUrl = `${baseUrl}/api/og`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -15,10 +16,11 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: baseUrl,
     siteName: "AI市場価値鑑定",
-    images: [{ url: "/api/og", width: 1200, height: 630, alt: "AI市場価値鑑定" }],
+    images: [{ url: ogImageUrl, width: 1200, height: 630, alt: "AI市場価値鑑定" }],
   },
   twitter: {
     card: "summary_large_image",
+    images: [ogImageUrl],
   },
 };
 

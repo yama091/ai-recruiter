@@ -71,17 +71,26 @@ async function fetchGitHubData(username: string) {
   const repos = reposRes.ok ? await reposRes.json() : [];
 
   const languages: Record<string, number> = {};
+  let totalStars = 0;
   for (const repo of repos) {
     if (repo.language) {
       languages[repo.language] = (languages[repo.language] || 0) + 1;
     }
+    totalStars += repo.stargazers_count || 0;
   }
+
+  const createdAt = user.created_at ? new Date(user.created_at) : null;
+  const accountYears = createdAt
+    ? Math.max(0, (Date.now() - createdAt.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+    : 0;
 
   return {
     name: user.name || username,
     bio: user.bio || "なし",
-    followers: user.followers,
-    publicRepos: user.public_repos,
+    followers: user.followers || 0,
+    publicRepos: user.public_repos || 0,
+    totalStars,
+    accountYears: Math.round(accountYears * 10) / 10,
     company: user.company || "不明",
     location: user.location || "不明",
     topLanguages: Object.entries(languages)
@@ -171,28 +180,33 @@ function parseScoresFromContent(content: string): {
   return { markdown: content.trim(), scores: DEFAULT_SCORES, ...defaultMeta };
 }
 
-const SYSTEM_PROMPT = `あなたは年収1000万超えを狙うハイエンドエンジニア専用の査定エンジンです。高額キャリアコンサルタントとして、データに基づいた冷徹で説得力のある鑑定を行います。
+const SYSTEM_PROMPT = `あなたはエンジニア市場価値鑑定の専門家です。データに基づき冷徹で納得感のある鑑定を行います。
+
+【年収算出の厳格ルール（必須）】
+- 想定年収は必ず300万円〜1500万円の範囲に収めること。リポジトリが少ない・スターが少ない・フォロワーが少ない・アカウント歴が短い場合は過大評価禁止。
+- 総スター数・フォロワー数・リポジトリ数・アカウント年数を厳格に評価。日本エンジニア市場の実態に即すこと。
+- 例: リポジトリ数5未満＋スター合計10未満＋フォロワー20未満 → 300万〜500万程度。スター100超＋フォロワー200超＋実績あり → 800万〜1200万程度。
 
 必ず以下の形式で出力してください。
 
 1) 日本語のMarkdown（表・太字を多用し、公式な鑑定書のような見た目）
 - **見出し**: ### 【鑑定結果】市場価値診断書 から始める
-- **想定年収**: 1円単位で提示（例: 12,345,678円）
+- **想定年収**: 300万〜1500万の範囲で1円単位（例: 5,200,000円）
 - **技術力・格付け**: S+ / S / A / B / C / D / E の7段階で厳格に判定し、理由を1行で
 - **技術スタック・GitHub活動・市場需給**: 箇条書きで簡潔に分析
 - **あと300万上げるために習得すべき技術**: 3つを具体的に提示
-- 全体は200〜300文字程度の高密度な情報に凝縮。励ましや曖昧な表現は使わず、事実とデータに基づいたプロフェッショナルな口調で。
+- 全体は200〜300文字程度。励ましや曖昧表現は使わず、事実とデータに基づいた口調で。
 
 2) 最後に、以下のJSONブロックを必ず1つだけ付けてください。
 \`\`\`json
-{"technical": 85, "contribution": 70, "sustainability": 80, "market": 75, "jobTitle": "TypeScriptの魔術師", "salaryDisplay": "12,345,678円", "rank": "A", "tier": "A", "tierFeedback": "実力はある。あとは星1つ、目に見える成果を一つ増やせばSへ届く。"}
+{"technical": 70, "contribution": 65, "sustainability": 75, "market": 70, "jobTitle": "TypeScriptの魔術師", "salaryDisplay": "5,200,000円", "rank": "B", "tier": "B", "tierFeedback": "実力はある。あとは星1つ、目に見える成果を増やせばSへ届く。"}
 \`\`\`
-- technical, contribution, sustainability, market: 0〜100の整数（レーダーチャート用）
-- jobTitle: **日本語のみ**。GitHubの活動から導いた、直感的でかっこいい日本語の称号を1つだけ（例: TypeScriptの魔術師、精密な設計士、API職人、クラウドの番人、レガシー退治人 など）。英語の称号は禁止。
-- salaryDisplay: 想定年収をそのまま文字で（例: 12,345,678円）
-- rank: 技術力の5段階 S / A / B / C / D のいずれか1文字
-- tier: 厳格な格付け。S+ / S / A / B / C / D / E のいずれか1つ。
-- tierFeedback: **日本語のみ**。プロフェッショナルかつ心に刺さる1文。辛口で的確で、SNSで反論や自慢したくなるような一言。例: 「リポジトリはある。あとは星と実績を。」「肩書は上級、見え方は初級。後者を直せ。」`;
+- technical, contribution, sustainability, market: 0〜100の整数
+- jobTitle: **日本語のみ**。直感的でかっこいい日本語の称号1つ（例: TypeScriptの魔術師、精密な設計士、API職人）。英語禁止。
+- salaryDisplay: 想定年収をそのまま文字で（300万〜1500万範囲内）
+- rank: S / A / B / C / D のいずれか
+- tier: S+ / S / A / B / C / D / E のいずれか
+- tierFeedback: **日本語のみ**。心に刺さるプロの日本語1文。英語禁止。`;
 
 export async function POST(req: NextRequest) {
   if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === "") {
@@ -230,6 +244,8 @@ export async function POST(req: NextRequest) {
 自己紹介: ${githubData.bio}
 フォロワー数: ${githubData.followers}
 公開リポジトリ数: ${githubData.publicRepos}
+総スター数（対象リポジトリ合計）: ${githubData.totalStars}
+アカウント年数: ${githubData.accountYears}年
 会社/所属: ${githubData.company}
 場所: ${githubData.location}
 主要言語: ${githubData.topLanguages.join(", ")}

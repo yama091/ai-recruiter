@@ -398,10 +398,10 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Print — A4 1枚に収まるレイアウト */
+/* Print — A4 1枚に完全収納 */
 @page {
   size: A4;
-  margin: 12mm;
+  margin: 8mm;
 }
 
 @media print {
@@ -424,12 +424,13 @@ body {
     top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    padding: 0 8px !important;
+    padding: 0 4px !important;
     margin: 0 !important;
     background: #fff !important;
     color: #111 !important;
     box-shadow: none !important;
-    font-size: 11px !important;
+    font-size: 9px !important;
+    line-height: 1.3 !important;
   }
   [data-print-report] .glass-panel-strong,
   [data-print-report] .glass-panel,
@@ -438,25 +439,30 @@ body {
     border: 1px solid #e2e8f0 !important;
     box-shadow: none !important;
     break-inside: avoid;
-    padding: 12px !important;
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
   }
   [data-print-report] .card-gradient-border::before {
     display: none;
   }
   [data-print-report] table {
     break-inside: avoid;
-    font-size: 10px !important;
+    font-size: 8px !important;
   }
   [data-print-report] h1, [data-print-report] h2, [data-print-report] h3 {
     break-after: avoid;
-    font-size: 14px !important;
+    font-size: 11px !important;
+    margin: 2px 0 !important;
   }
   [data-print-report] .space-y-8 > * + * {
-    margin-top: 12px !important;
+    margin-top: 4px !important;
   }
   [data-print-report] [class*="h-\[280px\]"],
   [data-print-report] [class*="h-[320px]"] {
-    height: 160px !important;
+    height: 100px !important;
+  }
+  [data-print-report] p, [data-print-report] li {
+    margin: 1px 0 !important;
   }
   .meteors-layer,
   .scan-overlay,

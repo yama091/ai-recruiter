@@ -464,7 +464,7 @@ export default function Home() {
                         <p className="mt-1 text-lg font-bold text-white">{salaryDisplay || "—"}</p>
                       </div>
                       <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{t.radarLabels[1]}</p>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{t.businessRadarLabels[1]}</p>
                         <p className="mt-1 text-2xl font-bold text-white">{scores.contribution}</p>
                       </div>
                     </div>
@@ -484,60 +484,44 @@ export default function Home() {
               <p className="text-center text-sm font-semibold text-zinc-300">
                 {t.nextActionTitle}
               </p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <a
-                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.06] py-4 text-sm font-semibold text-white transition-all hover:bg-white/[0.1] hover:border-white/[0.18]"
-                >
-                  {t.nextActionShare}
-                </a>
-                <a
-                  href={transferUrl}
-                  target="_blank"
-                  rel="noopener noreferrer sponsored"
-                  className="golden-vip-button flex items-center justify-center gap-2 rounded-xl px-4 py-4 text-center text-sm font-bold text-white transition-all hover:opacity-95"
-                >
-                  {t.nextActionTransfer}
-                </a>
-                <a
-                  href={learningUrl}
-                  target="_blank"
-                  rel="noopener noreferrer sponsored"
-                  className="golden-vip-button flex items-center justify-center gap-2 rounded-xl px-4 py-4 text-center text-sm font-bold text-white transition-all hover:opacity-95"
-                >
-                  {t.nextActionLearning}
-                </a>
-              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <a
                   href={transferUrl}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="golden-vip-button block rounded-2xl px-6 py-5 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.01] active:scale-[0.99]"
+                  className="golden-vip-button flex flex-col items-center justify-center gap-1 rounded-2xl px-6 py-6 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/95">
                     {t.vipCtaTransfer}
                   </span>
-                  <span className="mt-2 block text-sm font-bold text-white">
-                    {t.vipTransferSite} →
+                  <span className="text-base font-bold text-white">
+                    doda・転職サイト →
                   </span>
                 </a>
                 <a
                   href={learningUrl}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
-                  className="golden-vip-button block rounded-2xl px-6 py-5 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.01] active:scale-[0.99]"
+                  className="golden-vip-button flex flex-col items-center justify-center gap-1 rounded-2xl px-6 py-6 text-center transition-all duration-300 hover:opacity-95 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/95">
                     {t.vipCtaLearning}
                   </span>
-                  <span className="mt-2 block text-sm font-bold text-white">
-                    {t.vipLearningSite} →
+                  <span className="text-base font-bold text-white">
+                    Udemy・スクール →
                   </span>
                 </a>
               </div>
+              <p className="text-center">
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-zinc-500 underline hover:text-zinc-300"
+                >
+                  {t.nextActionShare}
+                </a>
+              </p>
             </div>
             )}
 
