@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { translations, getLocaleFromBrowser, type Locale } from "../lib/i18n";
+import { translations, getLocaleFromBrowser, type Locale, type AppMode } from "../lib/i18n";
 import { getTierConfig } from "../lib/tiers";
 
 const RADAR_KEYS = ["technical", "contribution", "sustainability", "market"] as const;
@@ -132,6 +132,7 @@ const DEFAULT_SIDEBIZ_EN = "https://www.upwork.com/";
 
 export default function Home() {
   const [locale, setLocale] = useState<Locale>("en");
+  const [mode, setMode] = useState<AppMode>("personal");
   const [githubUrl, setGithubUrl] = useState("");
   const [result, setResult] = useState("");
   const [scores, setScores] = useState<RadarScores | null>(null);
@@ -207,6 +208,7 @@ export default function Home() {
                 ...(rank && { rank }),
                 ...(tier && { tier }),
                 ...(tierFeedback && { feedback: tierFeedback }),
+                mode: mode,
               }).toString()}`
             : window.location.href
         )
@@ -225,8 +227,20 @@ export default function Home() {
   const tierCfg = tier ? getTierConfig(tier) : null;
   const tierLabel = tierCfg ? (locale === "ja" ? tierCfg.labelJa : tierCfg.labelEn) : "";
 
+  const reportRef = useRef<HTMLDivElement>(null);
+  const handlePdfExport = useCallback(() => {
+    if (typeof window === "undefined" || !reportRef.current) return;
+    const prevTitle = document.title;
+    document.title = mode === "business" ? "Engineer Skill Report" : "AI Market Value Certification";
+    window.print();
+    document.title = prevTitle;
+  }, [mode]);
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#030303] font-sans text-zinc-100 animate-page-in">
+    <main
+      className="relative min-h-screen overflow-hidden bg-[#030303] font-sans text-zinc-100 animate-page-in"
+      data-theme={mode}
+    >
       <div className="pointer-events-none fixed inset-0 bg-mesh" aria-hidden />
       <div className="meteors-layer" aria-hidden>
         {[...Array(7)].map((_, i) => (
@@ -239,39 +253,68 @@ export default function Home() {
         </div>
       )}
 
-      <div className="fixed top-14 right-4 z-50 flex items-center gap-0 rounded-xl border border-white/[0.1] bg-black/60 backdrop-blur-xl">
-        <button
-          type="button"
-          onClick={() => setLocale("ja")}
-          className={`rounded-l-xl px-3 py-2 text-xs font-semibold transition-colors ${locale === "ja" ? "bg-indigo-500/80 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-          aria-label={t.langJa}
-        >
-          JA
-        </button>
-        <button
-          type="button"
-          onClick={() => setLocale("en")}
-          className={`rounded-r-xl px-3 py-2 text-xs font-semibold transition-colors ${locale === "en" ? "bg-indigo-500/80 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
-          aria-label={t.langEn}
-        >
-          EN
-        </button>
+      <div className="fixed top-14 right-4 z-50 flex items-center gap-2">
+        <div className="mode-tabs">
+          <button
+            type="button"
+            onClick={() => setMode("personal")}
+            data-active={mode === "personal"}
+            aria-label={t.modePersonal}
+          >
+            {t.modePersonal}
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("business")}
+            data-active={mode === "business"}
+            aria-label={t.modeBusiness}
+          >
+            {t.modeBusiness}
+          </button>
+        </div>
+        <div className="flex items-center gap-0 rounded-xl border border-white/[0.1] bg-black/60 backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={() => setLocale("ja")}
+            className={`rounded-l-xl px-3 py-2 text-xs font-semibold transition-colors ${locale === "ja" ? "bg-indigo-500/80 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+            aria-label={t.langJa}
+          >
+            JA
+          </button>
+          <button
+            type="button"
+            onClick={() => setLocale("en")}
+            className={`rounded-r-xl px-3 py-2 text-xs font-semibold transition-colors ${locale === "en" ? "bg-indigo-500/80 text-white" : "text-zinc-500 hover:text-zinc-300"}`}
+            aria-label={t.langEn}
+          >
+            EN
+          </button>
+        </div>
       </div>
 
       <div className="relative z-10 mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
         <header className="space-y-6 text-center">
           <div
             className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 backdrop-blur-xl"
-            style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.3) inset" }}
+            style={{
+              boxShadow: mode === "business" ? "0 0 0 1px rgba(29,78,216,0.2) inset" : "0 0 0 1px rgba(0,0,0,0.3) inset",
+            }}
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
-            {t.badge}
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{
+                background: mode === "business" ? "#2563eb" : undefined,
+                boxShadow: mode === "business" ? "0 0 8px rgba(37,99,235,0.6)" : "0 0 8px rgba(99,102,241,0.6)",
+                ...(mode === "personal" && { backgroundColor: "rgb(99, 102, 241)" }),
+              }}
+            />
+            {mode === "personal" ? t.badge : t.businessBadge}
           </div>
           <h1 className="text-4xl font-semibold tracking-[-0.02em] text-white sm:text-5xl">
-            {t.title}
+            {mode === "personal" ? t.title : t.businessTitle}
           </h1>
           <p className="mx-auto max-w-md text-[15px] leading-[1.7] text-zinc-500 sm:text-base">
-            {t.subtitle}
+            {mode === "personal" ? t.subtitle : t.businessSubtitle}
           </p>
         </header>
 
@@ -303,8 +346,26 @@ export default function Home() {
         </GlassCard>
 
         {result && (
-          <section className="mt-14 space-y-8">
-            {jobTitle && (
+          <section ref={reportRef} data-print-report className="mt-14 space-y-8">
+            {mode === "business" && jobTitle && (
+              <GlassCard className="animate-fade-in-up stagger-1 card-gradient-border rounded-2xl overflow-hidden">
+                <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
+                  <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                    {t.businessReportSummary}
+                  </p>
+                  <p className="text-center text-xl font-bold tracking-tight text-white sm:text-2xl">
+                    {jobTitle}
+                  </p>
+                  {salaryDisplay && (
+                    <p className="mt-3 text-center text-lg font-semibold text-zinc-300">
+                      {t.businessReportMarketValue}: {salaryDisplay}
+                    </p>
+                  )}
+                </div>
+              </GlassCard>
+            )}
+
+            {mode === "personal" && jobTitle && (
               <GlassCard className="animate-fade-in-up stagger-1 card-gradient-border rounded-2xl overflow-hidden">
                 <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
                   <p className="mb-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
@@ -331,7 +392,7 @@ export default function Home() {
               </GlassCard>
             )}
 
-            {tier && tierCfg && (
+            {mode === "personal" && tier && tierCfg && (
               <GlassCard className="animate-fade-in-up stagger-2 card-gradient-border rounded-2xl overflow-hidden">
                 <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
                   <p className="mb-3 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
@@ -364,16 +425,16 @@ export default function Home() {
               <GlassCard className="animate-fade-in-up stagger-3 card-gradient-border rounded-2xl overflow-hidden">
                 <div className="rounded-2xl glass-panel-strong p-6 sm:p-8">
                   <p className="mb-4 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                    {t.radarTitle}
+                    {mode === "business" ? t.businessRadarTitle : t.radarTitle}
                   </p>
                   <h2 className="text-center text-lg font-semibold tracking-tight text-white">
-                    {t.radarHeading}
+                    {mode === "business" ? t.businessRadarHeading : t.radarHeading}
                   </h2>
                   <div className="mx-auto mt-6 h-[280px] w-full sm:h-[320px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart
                         data={RADAR_KEYS.map((key, i) => ({
-                          subject: t.radarLabels[i],
+                          subject: mode === "business" ? t.businessRadarLabels[i] : t.radarLabels[i],
                           value: scores[key],
                           fullMark: 100,
                         }))}
@@ -381,11 +442,31 @@ export default function Home() {
                         <PolarGrid stroke="rgba(255,255,255,0.12)" />
                         <PolarAngleAxis dataKey="subject" tick={{ fill: "#a1a1aa", fontSize: 11 }} />
                         <PolarRadiusAxis angle={90} domain={[0, 100]} tick={{ fill: "#71717a", fontSize: 10 }} />
-                        <Radar name={t.radarScore} dataKey="value" stroke="#6366f1" fill="#6366f1" fillOpacity={0.35} strokeWidth={2} />
+                        <Radar name={t.radarScore} dataKey="value" stroke={mode === "business" ? "#2563eb" : "#6366f1"} fill={mode === "business" ? "#2563eb" : "#6366f1"} fillOpacity={0.35} strokeWidth={2} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
+                  {mode === "business" && (
+                    <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                      <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{t.businessReportCodeQuality}</p>
+                        <p className="mt-1 text-2xl font-bold text-white">{scores.technical}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{t.businessReportSustainability}</p>
+                        <p className="mt-1 text-2xl font-bold text-white">{scores.sustainability}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{t.businessReportMarketValue}</p>
+                        <p className="mt-1 text-lg font-bold text-white">{salaryDisplay || "—"}</p>
+                      </div>
+                      <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">{t.radarLabels[1]}</p>
+                        <p className="mt-1 text-2xl font-bold text-white">{scores.contribution}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </GlassCard>
             )}
@@ -396,6 +477,7 @@ export default function Home() {
               </div>
             </GlassCard>
 
+            {mode === "personal" && (
             <div className="animate-fade-in-up stagger-4b rounded-2xl overflow-hidden">
               <a
                 href={transferUrl}
@@ -404,17 +486,39 @@ export default function Home() {
                 className="golden-vip-button block w-full rounded-2xl px-6 py-5 text-center text-lg font-bold transition-all duration-300 hover:opacity-95 hover:scale-[1.01] active:scale-[0.99]"
               >
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/90">
-                  {t.vipTitle}
+                  {t.vipTitlePersonal}
                 </span>
                 <span className="mt-1 block text-[13px] font-medium text-amber-100/90">
-                  {t.vipSubtitle}
+                  {t.vipSubtitlePersonal}
                 </span>
                 <span className="mt-3 inline-flex items-center gap-2 rounded-xl bg-white/20 px-4 py-2 text-sm font-bold text-white backdrop-blur-sm">
-                  {t.vipCta} →
+                  {t.vipCtaPersonal} →
                 </span>
               </a>
             </div>
+            )}
 
+            {mode === "business" && (
+            <div className="animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:justify-center">
+              <button
+                type="button"
+                onClick={handlePdfExport}
+                className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/[0.1] hover:border-white/[0.18]"
+              >
+                {t.pdfExport}
+              </button>
+              <a
+                href={process.env.NEXT_PUBLIC_CONTACT_ENTERPRISE || "mailto:enterprise@example.com?subject=Enterprise%20%26%20API%20inquiry"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-xl border border-[#2563eb]/50 bg-[#2563eb]/20 px-6 py-3.5 text-center text-sm font-semibold text-blue-200 transition-all hover:bg-[#2563eb]/30"
+              >
+                {t.contactEnterprise}
+              </a>
+            </div>
+            )}
+
+            {mode === "personal" && (
             <GlassCard className="animate-fade-in-up stagger-5 card-gradient-border rounded-2xl overflow-hidden">
               <div className="rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
               <h2 className="text-center text-lg font-semibold tracking-tight text-white">
@@ -459,7 +563,9 @@ export default function Home() {
               <p className="mt-5 text-center text-[11px] text-zinc-600">{t.affiliateNote}</p>
               </div>
             </GlassCard>
+            )}
 
+            {mode === "personal" && (
             <div className="animate-fade-in-up stagger-6 space-y-4">
               <p className="text-center text-[11px] font-medium uppercase tracking-widest text-zinc-600">
                 {t.shareLabel}
@@ -483,7 +589,9 @@ export default function Home() {
                 </a>
               </div>
             </div>
+            )}
 
+            {mode === "personal" && (
             <div className="animate-fade-in-up stagger-7 rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
               <p className="mb-1 text-center text-[11px] font-semibold uppercase tracking-widest text-zinc-500">
                 {t.recommendLabel}
@@ -500,6 +608,7 @@ export default function Home() {
                 </a>
               </div>
             </div>
+            )}
           </section>
         )}
       </div>

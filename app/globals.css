@@ -127,6 +127,83 @@ body {
   animation: glow-float-2 14s ease-in-out infinite;
 }
 
+/* Business theme — royal blue, trust */
+[data-theme="business"] .bg-mesh::before {
+  background: radial-gradient(circle, rgba(29, 78, 216, 0.4) 0%, transparent 55%);
+  animation: glow-float 14s ease-in-out infinite;
+}
+
+[data-theme="business"] .bg-mesh::after {
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, transparent 55%);
+  animation: glow-float-2 16s ease-in-out infinite;
+}
+
+[data-theme="business"] .meteors-layer {
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-theme="business"] .scan-overlay::before {
+  background: linear-gradient(90deg, transparent, rgba(29, 78, 216, 0.9), rgba(37, 99, 235, 0.9), transparent);
+  box-shadow: 0 0 24px rgba(29, 78, 216, 0.5);
+}
+
+[data-theme="business"] .scan-overlay::after {
+  background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(29, 78, 216, 0.08), transparent 60%);
+}
+
+[data-theme="business"] .card-gradient-border::before {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb, #3b82f6, #1d4ed8);
+}
+
+[data-theme="business"] .glass-card-interactive::before {
+  background: radial-gradient(
+    600px circle at var(--mouse-x) var(--mouse-y),
+    rgba(29, 78, 216, 0.1),
+    transparent 40%
+  );
+}
+
+/* Tab switch — Personal / Business */
+.mode-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+}
+
+.mode-tabs button {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+}
+
+.mode-tabs button[data-active="true"] {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mode-tabs button[data-active="false"] {
+  color: #a1a1aa;
+}
+
+.mode-tabs button[data-active="false"]:hover {
+  color: #e4e4e7;
+}
+
+[data-theme="business"] .mode-tabs button[data-active="true"] {
+  background: rgba(29, 78, 216, 0.35);
+  box-shadow: 0 0 20px rgba(29, 78, 216, 0.25);
+}
+
 /* Glassmorphism with mouse-follow highlight */
 .glass-panel {
   background: rgba(255, 255, 255, 0.02);
@@ -319,4 +396,30 @@ body {
     0 0 0 1px rgba(251, 191, 36, 0.3),
     0 8px 32px rgba(217, 119, 6, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Print — report only for PDF export */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  [data-print-report],
+  [data-print-report] * {
+    visibility: visible;
+  }
+  [data-print-report] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    max-width: 100%;
+    background: #fff;
+    color: #111;
+  }
+  .meteors-layer,
+  .scan-overlay,
+  .mode-tabs,
+  .fixed {
+    display: none !important;
+  }
 }

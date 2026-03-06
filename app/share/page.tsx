@@ -7,7 +7,7 @@ function parseScores(scoresParam: string | null): number[] {
 }
 
 type Props = {
-  searchParams: Promise<{ scores?: string; title?: string; salary?: string; rank?: string; tier?: string; feedback?: string }>;
+  searchParams: Promise<{ scores?: string; title?: string; salary?: string; rank?: string; tier?: string; feedback?: string; mode?: string }>;
 };
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
@@ -18,10 +18,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const rank = params.rank ?? "";
   const tier = params.tier ?? "";
   const feedback = params.feedback ?? "";
+  const mode = params.mode ?? "personal";
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
-  const ogParams = new URLSearchParams({ scores });
+  const ogParams = new URLSearchParams({ scores, mode });
   if (title) ogParams.set("title", title);
   if (salary) ogParams.set("salary", salary);
   if (rank) ogParams.set("rank", rank);
