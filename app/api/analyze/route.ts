@@ -185,41 +185,49 @@ function buildSystemPrompt(locale: "ja" | "en", mode: "personal" | "business"): 
   const isBusiness = mode === "business";
   const jobTitleRule = isBusiness
     ? (isJa
-      ? "Professional title only (e.g. Senior Engineer (Top 5%), Full-stack Architect, Backend Specialist). No playful terms like 魔術師. Recruiter-ready."
-      : "Professional title only (e.g. Senior Engineer (Top 5%), Full-stack Architect, Backend Specialist). No playful terms.")
+      ? "プロフェッショナルな日本語の称号のみ（例：シニアエンジニア（トップ5％）、フルスタックアーキテクト）。英語禁止。"
+      : "Professional title only (e.g. Senior Engineer (Top 5%), Full-stack Architect). No Japanese.")
     : (isJa
-      ? "Playful, catchy Japanese title (e.g. TypeScriptの魔術師, 精密な設計士, API職人). No English."
-      : "Professional but appealing English title (e.g. Master of TypeScript, System Design Specialist). No Japanese.");
+      ? "日本人が直感的に凄さを感じる日本語の称号のみ（例：TypeScriptの魔術師、フロントエンドの開拓者、精密な設計士、API職人）。英語は1語も禁止。"
+      : "Professional English title (e.g. Master of TypeScript, System Design Specialist). No Japanese.");
+
+  const langBlock = isJa
+    ? `【最重要】あなたは日本のIT専門家です。全ての出力（本文・称号・フィードバック・評価ラベル）は自然な日本語のみで行い、英語は1単語も使わないこと。英語の専門用語はカタカナか適切な日本語訳を使用（例：Repository→リポジトリ、Framework→フレームワーク、Full-stack→フルスタック）。`
+    : "Output in natural business English only. No Japanese.";
+
+  const formatBlock = isJa
+    ? `1) Markdownで、以下の3セクションを日本語で記述。意味の通る自然な日本語のみ。直訳や不自然な表現禁止。
+
+- ### 【鑑定結果】市場価値診断書
+- **想定年収**: 300万〜1500万円の範囲で1円単位（例：5,200,000円）
+- **格付け**: S+ / S / A / B / C / D / E の7段階と1行の理由
+
+**【技術的な強み】** どの言語・フレームワークを、どの程度使いこなしているか。具体例で記述。
+
+**【実務への貢献度】** 開発頻度・継続性から見える、エンジニアとしての信頼性。
+
+**【今後の展望】** 年収・市場価値を上げるために、次に学ぶべき技術を3つ具体的に。`
+    : `1) Markdown in English (tables, bold, formal style). Include: estimated salary, grade (S+ to E), technical strengths, contribution/sustainability, and 3 concrete learning recommendations.`;
+
   return `You are an expert in engineer market value certification. Provide data-driven, credible assessments.
 
-【CRITICAL — LANGUAGE SEPARATION】
-- When output language is Japanese: the ENTIRE response must be in Japanese only (markdown body, jobTitle, tierFeedback). No English words.
-- When output language is English: the ENTIRE response must be in English only. No Japanese.
-- jobTitle: ${jobTitleRule}
-- tierFeedback: ${isJa ? "Japanese only — one punchy line, no English." : "English only — one punchy line, natural business English. No Japanese."}
+${langBlock}
 
-【STRICT SALARY RULES (MANDATORY)】
-- Estimated annual salary MUST fall within 3,000,000–15,000,000 JPY. Never overestimate. Be conservative.
-- Evaluate rigorously: total stars (strong signal), followers, public repo count, account age. Align with real Japanese engineer market.
-- Examples: repos<5 + stars<10 + followers<20 + account<2yr → 3–4M JPY. stars>100 + followers>200 + account>5yr + quality repos → 8–12M JPY.
-- Factor in: repo descriptions, top languages, README presence, commit/PR activity, OSS visibility. Sparse or empty repos lower scores.
+【STRICT SALARY RULES】
+- Estimated annual salary MUST be 3,000,000–15,000,000 JPY. Never overestimate.
+- Evaluate: total stars, followers, repo count, account age. Align with Japanese engineer market.
+- Examples: repos<5 + stars<10 + followers<20 → 3–5M JPY. stars>100 + followers>200 + quality → 8–12M JPY.
 
-Output in the following format:
+Output format:
 
-1) Markdown in ${isJa ? "Japanese" : "English"} (use tables, bold, formal report style). All text in that language only.
-- **Heading**: Start with ### ${isJa ? "【鑑定結果】市場価値診断書" : "Certification Report — Market Value Assessment"}
-- **Estimated salary**: 3M–15M JPY, exact figure (e.g. 5,200,000円 or equivalent in JPY)
-- **Grade**: S+ / S / A / B / C / D / E with one-line rationale
-- **Tech stack, GitHub activity, market demand**: Bullet points
-- **3 technologies to learn for +3M salary**: Concrete suggestions
-- 200–300 characters total. Factual, data-driven tone.
+${formatBlock}
 
-2) Append exactly one JSON block. jobTitle and tierFeedback must be in the same language as the markdown (${isJa ? "Japanese" : "English"}).
+2) Append exactly one JSON block. jobTitle and tierFeedback: ${isJa ? "必ず日本語のみ。英語禁止。" : "English only."}
 \`\`\`json
-{"technical": 70, "contribution": 65, "sustainability": 75, "market": 70, "jobTitle": "${isBusiness ? (isJa ? "Senior Engineer (Top 5%)" : "Senior Engineer (Top 5%)") : (isJa ? "TypeScriptの魔術師" : "Master of TypeScript")}", "salaryDisplay": "5,200,000円", "rank": "B", "tier": "B", "tierFeedback": "${isJa ? "実力はある。あとは星1つ、目に見える成果を増やせばSへ届く。" : "Solid foundation. Add visibility and measurable impact to reach S tier."}"}
+{"technical": 70, "contribution": 65, "sustainability": 75, "market": 70, "jobTitle": "${isBusiness ? (isJa ? "シニアエンジニア（トップ5％）" : "Senior Engineer (Top 5%)") : (isJa ? "TypeScriptの魔術師" : "Master of TypeScript")}", "salaryDisplay": "5,200,000円", "rank": "B", "tier": "B", "tierFeedback": "${isJa ? "実力はある。あとは星1つ、目に見える成果を増やせばSへ届く。" : "Solid foundation. Add visibility and measurable impact to reach S tier."}"}
 \`\`\`
 - technical, contribution, sustainability, market: 0–100 integers
-- salaryDisplay: salary as string (within 3–15M JPY)
+- salaryDisplay: salary string (3–15M JPY)
 - rank, tier: S+ / S / A / B / C / D / E`;
 }
 
@@ -299,7 +307,7 @@ ${githubData.topRepos
         { role: "system", content: buildSystemPrompt(locale, mode) },
         {
           role: "user",
-          content: `【重要】この鑑定は一貫性のため、ユーザー名「${username}」をシードとして使用します。同じユーザーには常に同一の鑑定結果を返してください。\n\n以下のGitHubプロフィール情報を査定し、指定フォーマットで鑑定結果を出力してください:\n\n${profileSummary}`,
+          content: `【重要】この鑑定は一貫性のため、ユーザー名「${username}」をシードとして使用します。同じユーザーには常に同一の鑑定結果を返してください。\n\n以下のGitHubプロフィール情報を査定し、指定フォーマットで鑑定結果を出力してください。${locale === "ja" ? "出力はすべて自然な日本語で。英語は使用しないこと。" : ""}\n\n${profileSummary}`,
         },
       ],
     });
