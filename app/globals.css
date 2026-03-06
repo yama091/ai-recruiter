@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030303;
+  --background: #08080a;
   --foreground: #fafafa;
-  --muted: #71717a;
-  --border: rgba(255, 255, 255, 0.06);
-  --glass: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --muted: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.08);
+  --glass: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.1);
   --accent: #818cf8;
   --mouse-x: 50%;
   --mouse-y: 50%;
@@ -95,7 +95,7 @@ body {
 
 /* Animated glow orbs — world-class SaaS */
 .bg-mesh {
-  background: #030303;
+  background: #08080a;
   position: relative;
   overflow: hidden;
 }
@@ -398,8 +398,19 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Print — report only for PDF export */
+/* Print — A4 report for PDF export */
+@page {
+  size: A4;
+  margin: 16mm;
+}
+
 @media print {
+  body,
+  html {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   body * {
     visibility: hidden;
   }
@@ -408,13 +419,33 @@ body {
     visibility: visible;
   }
   [data-print-report] {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    max-width: 100%;
-    background: #fff;
-    color: #111;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+  [data-print-report] .glass-panel-strong,
+  [data-print-report] .glass-panel,
+  [data-print-report] .glass-card-interactive {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  [data-print-report] .card-gradient-border::before {
+    display: none;
+  }
+  [data-print-report] table {
+    break-inside: avoid;
+  }
+  [data-print-report] h1, [data-print-report] h2, [data-print-report] h3 {
+    break-after: avoid;
   }
   .meteors-layer,
   .scan-overlay,

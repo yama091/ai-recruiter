@@ -5,6 +5,36 @@ export const runtime = "nodejs";
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+const analysisCache = new Map<
+  string,
+  { result: string; scores: RadarScores; jobTitle: string; salaryDisplay: string; rank: string; tier: string; tierFeedback: string }
+>();
+
+function getAnalysisCache(username: string) {
+  return analysisCache.get(username) ?? null;
+}
+
+function setAnalysisCache(
+  username: string,
+  data: { result: string; scores: RadarScores; jobTitle: string; salaryDisplay: string; rank: string; tier: string; tierFeedback: string }
+) {
+  analysisCache.set(username, data);
+  if (analysisCache.size > 500) {
+    const first = analysisCache.keys().next().value;
+    if (first) analysisCache.delete(first);
+  }
+}
+
+function hashSeed(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h = (h << 5) - h + c;
+    h |= 0;
+  }
+  return Math.abs(h) % 2147483647;
+}
+
 function extractUsername(url: string): string | null {
   try {
     const u = new URL(url.trim());
@@ -212,15 +242,24 @@ ${githubData.topRepos
   .join("\n")}
 `.trim();
 
+    const cacheKey = username.toLowerCase();
+    type Cached = { result: string; scores: RadarScores; jobTitle: string; salaryDisplay: string; rank: string; tier: string; tierFeedback: string };
+    const cached = getAnalysisCache(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached);
+    }
+
     const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
+      temperature: 0,
+      seed: hashSeed(username),
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {
           role: "user",
-          content: `以下のGitHubプロフィール情報を査定し、指定フォーマットで鑑定結果を出力してください:\n\n${profileSummary}`,
+          content: `【重要】この鑑定は一貫性のため、ユーザー名「${username}」をシードとして使用します。同じユーザーには常に同一の鑑定結果を返してください。\n\n以下のGitHubプロフィール情報を査定し、指定フォーマットで鑑定結果を出力してください:\n\n${profileSummary}`,
         },
       ],
     });
@@ -234,6 +273,15 @@ ${githubData.topRepos
     }
 
     const { markdown, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback } = parseScoresFromContent(content);
+    setAnalysisCache(cacheKey, {
+      result: markdown,
+      scores,
+      jobTitle,
+      salaryDisplay,
+      rank,
+      tier,
+      tierFeedback,
+    });
     return NextResponse.json({
       result: markdown,
       scores,

@@ -143,6 +143,7 @@ export default function Home() {
   const [tierFeedback, setTierFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     setLocale(getLocaleFromBrowser());
@@ -238,7 +239,7 @@ export default function Home() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-[#030303] font-sans text-zinc-100 animate-page-in"
+      className="relative min-h-screen overflow-hidden bg-[#08080a] font-sans text-zinc-100 animate-page-in"
       data-theme={mode}
     >
       <div className="pointer-events-none fixed inset-0 bg-mesh" aria-hidden />
@@ -383,7 +384,7 @@ export default function Home() {
                       )}
                       {rank && (
                         <span className="rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-4 py-2 text-sm font-bold text-indigo-200">
-                          Rank {rank}
+                          {t.rankLabel} {rank}
                         </span>
                       )}
                     </div>
@@ -408,8 +409,8 @@ export default function Home() {
                       }}
                     >
                       <span className="opacity-90">{tierCfg.badgeSymbol}</span>
-                      <span>Tier {tier}</span>
-                      <span className="text-sm font-bold opacity-90">({tierLabel})</span>
+                      <span>{t.tierDisplay} {tier}</span>
+                      <span className="text-sm font-bold opacity-90">（{tierLabel}）</span>
                     </div>
                   </div>
                   {tierFeedback && (
@@ -478,7 +479,28 @@ export default function Home() {
             </GlassCard>
 
             {mode === "personal" && (
-            <div className="animate-fade-in-up stagger-4b rounded-2xl overflow-hidden">
+            <div className="animate-fade-in-up stagger-4b space-y-4">
+              <p className="text-center text-sm font-semibold text-zinc-300">
+                {t.nextActionTitle}
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <a
+                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.12] bg-white/[0.06] py-4 text-sm font-semibold text-white transition-all hover:bg-white/[0.1] hover:border-white/[0.18]"
+                >
+                  {t.nextActionShare}
+                </a>
+                <a
+                  href={transferUrl}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="golden-vip-button flex items-center justify-center gap-2 rounded-xl px-4 py-4 text-center text-sm font-bold text-white transition-all hover:opacity-95"
+                >
+                  {t.nextActionVip}
+                </a>
+              </div>
               <a
                 href={transferUrl}
                 target="_blank"
@@ -507,15 +529,79 @@ export default function Home() {
               >
                 {t.pdfExport}
               </button>
-              <a
-                href={process.env.NEXT_PUBLIC_CONTACT_ENTERPRISE || "mailto:enterprise@example.com?subject=Enterprise%20%26%20API%20inquiry"}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setContactOpen(true)}
                 className="rounded-xl border border-[#2563eb]/50 bg-[#2563eb]/20 px-6 py-3.5 text-center text-sm font-semibold text-blue-200 transition-all hover:bg-[#2563eb]/30"
               >
                 {t.contactEnterprise}
-              </a>
+              </button>
             </div>
+            )}
+
+            {contactOpen && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setContactOpen(false)} aria-hidden />
+                <div className="relative w-full max-w-md rounded-2xl border border-white/[0.1] bg-[#0f0f12] p-6 shadow-2xl">
+                  <h2 id="contact-modal-title" className="text-lg font-semibold text-white">{t.contactModalTitle}</h2>
+                  <p className="mt-2 text-sm text-zinc-400">{t.contactModalDesc}</p>
+                  <div className="mt-6 space-y-3">
+                    {(process.env.NEXT_PUBLIC_CONTACT_FORM_URL || process.env.NEXT_PUBLIC_CONTACT_GOOGLE_FORM) && (
+                      <a
+                        href={process.env.NEXT_PUBLIC_CONTACT_FORM_URL || process.env.NEXT_PUBLIC_CONTACT_GOOGLE_FORM}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded-xl border border-white/[0.1] bg-white/[0.05] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+                      >
+                        {t.contactForm}
+                      </a>
+                    )}
+                    {(process.env.NEXT_PUBLIC_CONTACT_X_DM || process.env.NEXT_PUBLIC_CONTACT_TWITTER) && (
+                      <a
+                        href={process.env.NEXT_PUBLIC_CONTACT_X_DM || process.env.NEXT_PUBLIC_CONTACT_TWITTER}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded-xl border border-white/[0.1] bg-white/[0.05] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+                      >
+                        {t.contactX}
+                      </a>
+                    )}
+                    {(process.env.NEXT_PUBLIC_CONTACT_EMAIL || process.env.NEXT_PUBLIC_CONTACT_ENTERPRISE) && (
+                      <a
+                        href={typeof process.env.NEXT_PUBLIC_CONTACT_EMAIL === "string" ? `mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}` : (process.env.NEXT_PUBLIC_CONTACT_ENTERPRISE || "mailto:info@example.com")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded-xl border border-white/[0.1] bg-white/[0.05] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+                      >
+                        {t.contactEmail}
+                      </a>
+                    )}
+                    {(() => {
+                    const emailOrEnterprise = process.env.NEXT_PUBLIC_CONTACT_EMAIL || process.env.NEXT_PUBLIC_CONTACT_ENTERPRISE;
+                    const mailtoHref = emailOrEnterprise
+                      ? (String(emailOrEnterprise).startsWith("mailto:") ? String(emailOrEnterprise) : `mailto:${emailOrEnterprise}`)
+                      : "mailto:info@example.com?subject=大規模利用・API連携のご相談";
+                    return (
+                      <a
+                        href={mailtoHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block rounded-xl border border-white/[0.1] bg-white/[0.05] px-4 py-3 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+                      >
+                        {t.contactEmail}
+                      </a>
+                    );
+                  })()}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setContactOpen(false)}
+                    className="mt-6 w-full rounded-xl bg-white/10 py-2.5 text-sm font-medium text-white hover:bg-white/15"
+                  >
+                    {t.contactClose}
+                  </button>
+                </div>
+              </div>
             )}
 
             {mode === "personal" && (
