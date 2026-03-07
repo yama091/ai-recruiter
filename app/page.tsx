@@ -257,6 +257,7 @@ export default function Home() {
         a.download = `ai-market-value-${locale}-${Date.now()}.png`;
         a.click();
         URL.revokeObjectURL(url);
+        alert(t.saveImageAndShareAlert);
         const appUrl = scores
           ? `${window.location.origin}/share?${new URLSearchParams({
               scores: [scores.technical, scores.contribution, scores.sustainability, scores.market].join(","),
@@ -274,7 +275,7 @@ export default function Home() {
     } catch {
       // ignore
     }
-  }, [locale, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback]);
+  }, [t, locale, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback]);
 
   const handlePdfExport = useCallback(() => {
     if (typeof window === "undefined" || !reportRef.current) return;
@@ -695,30 +696,14 @@ export default function Home() {
               <p className="text-center text-[11px] font-medium uppercase tracking-widest text-zinc-600">
                 {t.shareLabel}
               </p>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="flex justify-center">
                 <button
                   type="button"
                   onClick={handleSaveImageAndShare}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 py-3.5 text-sm font-medium text-amber-200 backdrop-blur-xl transition-all duration-300 hover:bg-amber-500/20 hover:border-amber-500/50 hover:translate-y-[-1px]"
+                  className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-8 py-3.5 text-sm font-medium text-amber-200 backdrop-blur-xl transition-all duration-300 hover:bg-amber-500/20 hover:border-amber-500/50 hover:translate-y-[-1px]"
                 >
                   {t.saveImageAndShare}
                 </button>
-                <a
-                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] py-3.5 text-sm font-medium text-zinc-200 backdrop-blur-xl transition-all duration-300 hover:bg-white/[0.06] hover:border-white/[0.12] hover:translate-y-[-1px]"
-                >
-                  {t.shareX}
-                </a>
-                <a
-                  href={locale === "ja" ? "https://doda.jp/" : "https://www.linkedin.com/jobs/"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.05] py-3.5 text-sm font-medium text-white backdrop-blur-xl transition-all duration-300 hover:bg-white/[0.08] hover:border-white/[0.12] hover:translate-y-[-1px]"
-                >
-                  {t.ctaOffer}
-                </a>
               </div>
             </div>
             )}
