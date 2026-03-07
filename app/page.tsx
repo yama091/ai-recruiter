@@ -145,6 +145,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [contactOpen, setContactOpen] = useState(false);
+  const [shareImageLoading, setShareImageLoading] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [pendingShareUrl, setPendingShareUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setLocale(getLocaleFromBrowser());
@@ -221,7 +224,8 @@ export default function Home() {
 
   const handleSaveImageAndShare = useCallback(async () => {
     const el = resultCardsRef.current || reportRef.current;
-    if (typeof window === "undefined" || !el) return;
+    if (typeof window === "undefined" || !el || shareImageLoading) return;
+    setShareImageLoading(true);
     try {
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(el, {
@@ -230,33 +234,46 @@ export default function Home() {
         backgroundColor: "#08080a",
         logging: false,
       });
+      const appUrl = scores
+        ? `${window.location.origin}/share?${new URLSearchParams({
+            scores: [scores.technical, scores.contribution, scores.sustainability, scores.market].join(","),
+            ...(jobTitle && { title: jobTitle }),
+            ...(salaryDisplay && { salary: salaryDisplay }),
+            ...(rank && { rank }),
+            ...(tier && { tier }),
+            ...(tierFeedback && { feedback: tierFeedback }),
+            mode,
+            v: "final",
+          }).toString()}`
+        : window.location.href;
+      const tweetUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(appUrl)}`;
       canvas.toBlob((blob) => {
-        if (!blob) return;
+        if (!blob) {
+          setShareImageLoading(false);
+          return;
+        }
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = `ai-market-value-${locale}-${Date.now()}.png`;
         a.click();
         URL.revokeObjectURL(url);
-        alert(t.saveImageAndShareAlert);
-        const appUrl = scores
-          ? `${window.location.origin}/share?${new URLSearchParams({
-              scores: [scores.technical, scores.contribution, scores.sustainability, scores.market].join(","),
-              ...(jobTitle && { title: jobTitle }),
-              ...(salaryDisplay && { salary: salaryDisplay }),
-              ...(rank && { rank }),
-              ...(tier && { tier }),
-              ...(tierFeedback && { feedback: tierFeedback }),
-              mode,
-              v: "final",
-            }).toString()}`
-          : window.location.href;
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(appUrl)}`, "_blank", "noopener,noreferrer");
+        setPendingShareUrl(tweetUrl);
+        setShareModalOpen(true);
+        setShareImageLoading(false);
       }, "image/png");
     } catch {
-      // ignore
+      setShareImageLoading(false);
     }
-  }, [t, locale, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback]);
+  }, [t, locale, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback, shareImageLoading]);
+
+  const handleOpenXFromModal = useCallback(() => {
+    if (pendingShareUrl) {
+      window.open(pendingShareUrl, "_blank", "noopener,noreferrer");
+      setShareModalOpen(false);
+      setPendingShareUrl(null);
+    }
+  }, [pendingShareUrl]);
 
   const handlePdfExport = useCallback(() => {
     if (typeof window === "undefined" || !reportRef.current) return;
@@ -323,7 +340,7 @@ export default function Home() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24">
-        <header className="space-y-6 text-center">
+        <header className="space-y-6 text-center break-words">
           <div
             className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-zinc-500 backdrop-blur-xl"
             style={{
@@ -340,10 +357,10 @@ export default function Home() {
             />
             {mode === "personal" ? t.badge : t.businessBadge}
           </div>
-          <h1 className={`text-4xl font-semibold tracking-[-0.02em] text-white sm:text-5xl ${mode === "business" ? "business-header-nowrap" : ""}`}>
+          <h1 className={`font-semibold tracking-[-0.02em] text-white break-words ${mode === "personal" ? "text-4xl sm:text-5xl" : "text-xl sm:text-3xl md:text-4xl"}`}>
             {mode === "personal" ? t.title : t.businessTitle}
           </h1>
-          <p className={`mx-auto max-w-md text-[15px] leading-[1.7] sm:text-base ${mode === "business" ? "business-header-nowrap text-zinc-200" : "text-zinc-200"}`}>
+          <p className={`mx-auto max-w-md break-words text-zinc-200 ${mode === "personal" ? "text-[15px] leading-[1.7] sm:text-base" : "text-sm leading-[1.6] sm:text-base"}`}>
             {mode === "personal" ? t.subtitle : t.businessSubtitle}
           </p>
         </header>
@@ -615,6 +632,31 @@ export default function Home() {
               </div>
             )}
 
+            {shareModalOpen && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
+                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { setShareModalOpen(false); setPendingShareUrl(null); }} aria-hidden />
+                <div className="relative w-full max-w-md rounded-2xl border border-white/[0.1] bg-[#0f0f12] p-6 shadow-2xl">
+                  <p id="share-modal-title" className="text-center text-sm text-zinc-200">{t.saveImageAndShareAlert}</p>
+                  <div className="mt-6 flex flex-col gap-3">
+                    <button
+                      type="button"
+                      onClick={handleOpenXFromModal}
+                      className="w-full rounded-xl border border-amber-500/40 bg-amber-500/20 py-3.5 text-sm font-semibold text-amber-200 transition hover:bg-amber-500/30"
+                    >
+                      {t.openXToShare}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShareModalOpen(false); setPendingShareUrl(null); }}
+                      className="w-full rounded-xl bg-white/10 py-2.5 text-sm font-medium text-white hover:bg-white/15"
+                    >
+                      {t.contactClose}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {mode === "personal" && (
             <GlassCard className="animate-fade-in-up stagger-5 card-gradient-border rounded-2xl overflow-hidden">
               <div className="rounded-2xl glass-panel border border-white/[0.06] p-6 sm:p-8">
@@ -671,9 +713,17 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleSaveImageAndShare}
-                  className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-8 py-3.5 text-sm font-medium text-amber-200 backdrop-blur-xl transition-all duration-300 hover:bg-amber-500/20 hover:border-amber-500/50 hover:translate-y-[-1px]"
+                  disabled={shareImageLoading}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-8 py-3.5 text-sm font-medium text-amber-200 backdrop-blur-xl transition-all duration-300 hover:bg-amber-500/20 hover:border-amber-500/50 hover:translate-y-[-1px] disabled:pointer-events-none disabled:opacity-70"
                 >
-                  {t.saveImageAndShare}
+                  {shareImageLoading ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-amber-300/30 border-t-amber-300" />
+                      {t.saveImageCreating}
+                    </>
+                  ) : (
+                    t.saveImageAndShare
+                  )}
                 </button>
               </div>
             </div>
