@@ -146,9 +146,6 @@ export default function Home() {
   const [error, setError] = useState("");
   const [contactOpen, setContactOpen] = useState(false);
   const [shareImageLoading, setShareImageLoading] = useState(false);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [pendingShareUrl, setPendingShareUrl] = useState<string | null>(null);
-
   useEffect(() => {
     setLocale(getLocaleFromBrowser());
   }, []);
@@ -225,6 +222,20 @@ export default function Home() {
   const handleSaveImageAndShare = useCallback(async () => {
     const el = resultCardsRef.current || reportRef.current;
     if (typeof window === "undefined" || !el || shareImageLoading) return;
+    const appUrl = scores
+      ? `${window.location.origin}/share?${new URLSearchParams({
+          scores: [scores.technical, scores.contribution, scores.sustainability, scores.market].join(","),
+          ...(jobTitle && { title: jobTitle }),
+          ...(salaryDisplay && { salary: salaryDisplay }),
+          ...(rank && { rank }),
+          ...(tier && { tier }),
+          ...(tierFeedback && { feedback: tierFeedback }),
+          mode,
+          v: "final",
+        }).toString()}`
+      : window.location.href;
+    const tweetUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(appUrl)}`;
+    window.open(tweetUrl, "_blank", "noopener,noreferrer");
     setShareImageLoading(true);
     try {
       const html2canvas = (await import("html2canvas")).default;
@@ -234,19 +245,6 @@ export default function Home() {
         backgroundColor: "#08080a",
         logging: false,
       });
-      const appUrl = scores
-        ? `${window.location.origin}/share?${new URLSearchParams({
-            scores: [scores.technical, scores.contribution, scores.sustainability, scores.market].join(","),
-            ...(jobTitle && { title: jobTitle }),
-            ...(salaryDisplay && { salary: salaryDisplay }),
-            ...(rank && { rank }),
-            ...(tier && { tier }),
-            ...(tierFeedback && { feedback: tierFeedback }),
-            mode,
-            v: "final",
-          }).toString()}`
-        : window.location.href;
-      const tweetUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(appUrl)}`;
       canvas.toBlob((blob) => {
         if (!blob) {
           setShareImageLoading(false);
@@ -258,14 +256,12 @@ export default function Home() {
         a.download = `ai-market-value-${locale}-${Date.now()}.png`;
         a.click();
         URL.revokeObjectURL(url);
-        setPendingShareUrl(tweetUrl);
-        setShareModalOpen(true);
         setShareImageLoading(false);
       }, "image/png");
     } catch {
       setShareImageLoading(false);
     }
-  }, [t, locale, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback, shareImageLoading]);
+  }, [locale, scores, jobTitle, salaryDisplay, rank, tier, tierFeedback, shareImageLoading]);
 
   const handlePdfExport = useCallback(() => {
     if (typeof window === "undefined" || !reportRef.current) return;
@@ -350,13 +346,13 @@ export default function Home() {
             {mode === "personal" ? t.badge : t.businessBadge}
           </div>
           <h1
-            className={`font-semibold tracking-[-0.02em] text-white break-words ${mode === "personal" ? "text-4xl sm:text-5xl" : "text-xl sm:text-3xl md:text-4xl"}`}
+            className={`font-semibold tracking-[-0.02em] text-white break-words ${mode === "personal" ? "text-2xl sm:text-4xl md:text-5xl" : "text-xl sm:text-3xl md:text-4xl"}`}
             style={mode === "business" ? { textWrap: "balance" } : undefined}
           >
             {mode === "personal" ? t.title : t.businessTitle}
           </h1>
           <p
-            className={`mx-auto max-w-md break-words text-zinc-200 ${mode === "personal" ? "text-[15px] leading-[1.7] sm:text-base" : "text-sm leading-[1.6] sm:text-base"}`}
+            className={`mx-auto max-w-md break-words text-zinc-200 ${mode === "personal" ? "text-sm leading-[1.7] sm:text-base" : "text-sm leading-[1.6] sm:text-base"}`}
             style={mode === "business" ? { textWrap: "balance" } : undefined}
           >
             {mode === "personal" ? t.subtitle : t.businessSubtitle}
@@ -626,34 +622,6 @@ export default function Home() {
                   >
                     {t.contactClose}
                   </button>
-                </div>
-              </div>
-            )}
-
-            {shareModalOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="share-modal-title">
-                <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => { setShareModalOpen(false); setPendingShareUrl(null); }} aria-hidden />
-                <div className="relative w-full max-w-md rounded-2xl border border-white/[0.1] bg-[#0f0f12] p-6 shadow-2xl">
-                  <p id="share-modal-title" className="text-center text-sm text-zinc-200">{t.saveImageAndShareAlert}</p>
-                  <div className="mt-6 flex flex-col gap-3">
-                    {pendingShareUrl && (
-                      <a
-                        href={pendingShareUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full rounded-xl border border-amber-500/40 bg-amber-500/20 py-3.5 text-center text-sm font-semibold text-amber-200 transition hover:bg-amber-500/30"
-                      >
-                        {t.openXToShare}
-                      </a>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => { setShareModalOpen(false); setPendingShareUrl(null); }}
-                      className="w-full rounded-xl bg-white/10 py-2.5 text-sm font-medium text-white hover:bg-white/15"
-                    >
-                      {t.contactClose}
-                    </button>
-                  </div>
                 </div>
               </div>
             )}
