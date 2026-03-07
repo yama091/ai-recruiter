@@ -203,25 +203,6 @@ export default function Home() {
     }
   };
 
-  const shareText = typeof window !== "undefined" ? encodeURIComponent(t.shareTweet) : "";
-  const shareUrl =
-    typeof window !== "undefined"
-      ? encodeURIComponent(
-          scores
-            ? `${window.location.origin}/share?${new URLSearchParams({
-                scores: [scores.technical, scores.contribution, scores.sustainability, scores.market].join(","),
-                ...(jobTitle && { title: jobTitle }),
-                ...(salaryDisplay && { salary: salaryDisplay }),
-                ...(rank && { rank }),
-                ...(tier && { tier }),
-                ...(tierFeedback && { feedback: tierFeedback }),
-                mode: mode,
-                v: "final",
-              }).toString()}`
-            : `${window.location.href}${window.location.href.includes("?") ? "&" : "?"}v=final`
-        )
-      : "";
-
   const transferUrl = locale === "ja"
     ? (process.env.NEXT_PUBLIC_AFFILIATE_TRANSFER ?? DEFAULT_TRANSFER_JA)
     : (process.env.NEXT_PUBLIC_AFFILIATE_TRANSFER_EN ?? DEFAULT_TRANSFER_EN);
@@ -551,16 +532,6 @@ export default function Home() {
                   </span>
                 </a>
               </div>
-              <p className="text-center">
-                <a
-                  href={`https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-zinc-500 underline hover:text-zinc-300"
-                >
-                  {t.nextActionShare}
-                </a>
-              </p>
             </div>
             )}
 
