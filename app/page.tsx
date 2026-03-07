@@ -145,6 +145,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [contactOpen, setContactOpen] = useState(false);
+  const [pdfExporting, setPdfExporting] = useState(false);
 
   useEffect(() => {
     setLocale(getLocaleFromBrowser());
@@ -243,12 +244,18 @@ export default function Home() {
   }, [scores, jobTitle, salaryDisplay, rank, tier, tierFeedback, locale]);
 
   const handlePdfExport = useCallback(() => {
-    if (typeof window === "undefined" || !reportRef.current) return;
+    if (typeof window === "undefined" || !reportRef.current || pdfExporting) return;
+    setPdfExporting(true);
     const prevTitle = document.title;
     document.title = mode === "business" ? (locale === "ja" ? "エンジニアスキルレポート" : "Engineer Skill Report") : (locale === "ja" ? "AI市場価値鑑定" : "AI Market Value Certification");
-    window.print();
-    document.title = prevTitle;
-  }, [mode, locale]);
+    const onAfterPrint = () => {
+      document.title = prevTitle;
+      setPdfExporting(false);
+      window.removeEventListener("afterprint", onAfterPrint);
+    };
+    window.addEventListener("afterprint", onAfterPrint);
+    requestAnimationFrame(() => window.print());
+  }, [mode, locale, pdfExporting]);
 
   return (
     <main
@@ -333,7 +340,7 @@ export default function Home() {
             ) : (
               <>
                 {t.businessTitle1}
-                <br className="block sm:hidden" />
+                <br className="block sm:hidden" aria-hidden />
                 {t.businessTitle2}
               </>
             )}
@@ -538,9 +545,17 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handlePdfExport}
-                className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/[0.1] hover:border-white/[0.18]"
+                disabled={pdfExporting}
+                className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/[0.1] hover:border-white/[0.18] disabled:pointer-events-none disabled:opacity-80"
               >
-                {t.pdfExport}
+                {pdfExporting ? (
+                  <>
+                    <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    {t.pdfExporting}
+                  </>
+                ) : (
+                  t.pdfExport
+                )}
               </button>
               <button
                 type="button"
