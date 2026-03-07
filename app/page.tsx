@@ -341,15 +341,14 @@ export default function Home() {
             {mode === "personal" ? t.badge : t.businessBadge}
           </div>
           <h1
-            className={`font-semibold tracking-[-0.02em] text-white leading-tight ${mode === "personal" ? "break-words text-2xl sm:text-4xl md:text-5xl" : "mx-auto w-full max-w-none whitespace-nowrap text-center text-xl sm:whitespace-normal sm:text-3xl md:text-4xl"}`}
-            style={mode === "business" ? { textWrap: "balance" } : undefined}
+            className={`font-semibold tracking-[-0.02em] text-white leading-tight ${mode === "personal" ? "break-words text-2xl sm:text-4xl md:text-5xl" : "mx-auto w-full text-center text-xl sm:text-3xl md:text-4xl"}`}
           >
             {mode === "personal" ? (
               t.title
             ) : (
               <>
-                <span className="block sm:inline">{t.businessTitle1}</span>
-                <span className="block sm:inline">{t.businessTitle2}</span>
+                {t.businessTitle1}<br />
+                {t.businessTitle2}
               </>
             )}
           </h1>
@@ -549,7 +548,7 @@ export default function Home() {
             )}
 
             {mode === "business" && (
-            <div className="animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
+            <div className="print-buttons-container animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
               <div className="flex flex-col gap-1.5">
                 <button
                   type="button"

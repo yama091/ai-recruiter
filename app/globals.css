@@ -509,6 +509,17 @@ body {
   [data-print-report] p, [data-print-report] li {
     margin: 0.5px 0 !important;
   }
+  [data-print-report] .print-buttons-container {
+    flex-direction: column !important;
+    display: flex !important;
+  }
+  [data-print-report] .print-buttons-container > * {
+    width: 100% !important;
+    margin-bottom: 24px !important;
+  }
+  [data-print-report] .print-buttons-container > *:last-child {
+    margin-bottom: 0 !important;
+  }
   .meteors-layer,
   .scan-overlay,
   .mode-tabs,
