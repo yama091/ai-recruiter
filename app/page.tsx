@@ -146,9 +146,18 @@ export default function Home() {
   const [error, setError] = useState("");
   const [contactOpen, setContactOpen] = useState(false);
   const [pdfExporting, setPdfExporting] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setLocale(getLocaleFromBrowser());
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(typeof window !== "undefined" && window.matchMedia("(max-width: 639px)").matches);
+    check();
+    const mql = window.matchMedia("(max-width: 639px)");
+    mql.addEventListener("change", check);
+    return () => mql.removeEventListener("change", check);
   }, []);
 
   const t = translations[locale];
@@ -244,7 +253,7 @@ export default function Home() {
   }, [scores, jobTitle, salaryDisplay, rank, tier, tierFeedback, locale]);
 
   const handlePdfExport = useCallback(() => {
-    if (typeof window === "undefined" || !reportRef.current || pdfExporting) return;
+    if (typeof window === "undefined" || !reportRef.current || pdfExporting || isMobile) return;
     setPdfExporting(true);
     const prevTitle = document.title;
     document.title = mode === "business" ? (locale === "ja" ? "エンジニアスキルレポート" : "Engineer Skill Report") : (locale === "ja" ? "AI市場価値鑑定" : "AI Market Value Certification");
@@ -255,7 +264,7 @@ export default function Home() {
     };
     window.addEventListener("afterprint", onAfterPrint);
     requestAnimationFrame(() => window.print());
-  }, [mode, locale, pdfExporting]);
+  }, [mode, locale, pdfExporting, isMobile]);
 
   return (
     <main
@@ -332,7 +341,7 @@ export default function Home() {
             {mode === "personal" ? t.badge : t.businessBadge}
           </div>
           <h1
-            className={`font-semibold tracking-[-0.02em] text-white leading-tight ${mode === "personal" ? "break-words text-2xl sm:text-4xl md:text-5xl" : "max-w-none text-xl sm:text-3xl md:text-4xl"}`}
+            className={`font-semibold tracking-[-0.02em] text-white leading-tight ${mode === "personal" ? "break-words text-2xl sm:text-4xl md:text-5xl" : "mx-auto w-full max-w-none whitespace-nowrap text-center text-xl sm:whitespace-normal sm:text-3xl md:text-4xl"}`}
             style={mode === "business" ? { textWrap: "balance" } : undefined}
           >
             {mode === "personal" ? (
@@ -340,7 +349,6 @@ export default function Home() {
             ) : (
               <>
                 <span className="block sm:inline">{t.businessTitle1}</span>
-                <span className="hidden sm:inline">&nbsp;</span>
                 <span className="block sm:inline">{t.businessTitle2}</span>
               </>
             )}
@@ -541,22 +549,25 @@ export default function Home() {
             )}
 
             {mode === "business" && (
-            <div className="animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:justify-center">
-              <button
-                type="button"
-                onClick={handlePdfExport}
-                disabled={pdfExporting}
-                className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/[0.1] hover:border-white/[0.18] disabled:pointer-events-none disabled:opacity-80"
-              >
-                {pdfExporting ? (
-                  <>
-                    <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    {t.pdfExporting}
-                  </>
-                ) : (
-                  t.pdfExport
-                )}
-              </button>
+            <div className="animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={handlePdfExport}
+                  disabled={pdfExporting || isMobile}
+                  className="rounded-xl border border-white/[0.12] bg-white/[0.06] px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition-all hover:bg-white/[0.1] hover:border-white/[0.18] disabled:pointer-events-none disabled:opacity-80"
+                >
+                  {pdfExporting ? (
+                    <>
+                      <span className="mr-2 inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      {t.pdfExporting}
+                    </>
+                  ) : (
+                    t.pdfExport
+                  )}
+                </button>
+                <p className="text-xs text-zinc-500">{t.pdfNote}</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setContactOpen(true)}
