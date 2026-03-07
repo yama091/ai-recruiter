@@ -232,9 +232,15 @@ export default function Home() {
           v: "final",
         }).toString()}`
       : window.location.href;
-    const tweetUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(appUrl)}`;
+    const tierCfg = tier ? getTierConfig(tier) : null;
+    const rankName = tierCfg ? (locale === "ja" ? tierCfg.labelJa : tierCfg.labelEn) : (tier || rank || "—");
+    const shareText =
+      locale === "ja"
+        ? `【AI市場価値鑑定】私の市場価値を可視化しました！判定は「${rankName}」です。 #AI鑑定 #エンジニア市場価値`
+        : `Got my engineer market value certified by AI! My tier: ${rankName} #AICertification #EngineerSalary`;
+    const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(appUrl)}`;
     window.open(tweetUrl, "_blank", "noopener,noreferrer");
-  }, [scores, jobTitle, salaryDisplay, rank, tier, tierFeedback]);
+  }, [scores, jobTitle, salaryDisplay, rank, tier, tierFeedback, locale]);
 
   const handlePdfExport = useCallback(() => {
     if (typeof window === "undefined" || !reportRef.current) return;
@@ -327,7 +333,7 @@ export default function Home() {
             ) : (
               <>
                 {t.businessTitle1}
-                <br className="sm:hidden" />
+                <br className="block sm:hidden" />
                 {t.businessTitle2}
               </>
             )}
