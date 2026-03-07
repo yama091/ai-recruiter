@@ -548,8 +548,8 @@ export default function Home() {
             )}
 
             {mode === "business" && (
-            <div className="print-buttons-container animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
-              <div className="flex flex-col gap-1.5">
+            <div className="print-buttons-container animate-fade-in-up stagger-4b flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center print:flex-col print:gap-6">
+              <div className="flex flex-col gap-1.5 print:mb-6">
                 <button
                   type="button"
                   onClick={handlePdfExport}
@@ -570,7 +570,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setContactOpen(true)}
-                className="rounded-xl border border-[#2563eb]/50 bg-[#2563eb]/20 px-6 py-3.5 text-center text-sm font-semibold text-blue-200 transition-all hover:bg-[#2563eb]/30"
+                className="rounded-xl border border-[#2563eb]/50 bg-[#2563eb]/20 px-6 py-3.5 text-center text-sm font-semibold text-blue-200 transition-all hover:bg-[#2563eb]/30 print:w-full print:mb-6"
               >
                 {t.contactEnterprise}
               </button>
